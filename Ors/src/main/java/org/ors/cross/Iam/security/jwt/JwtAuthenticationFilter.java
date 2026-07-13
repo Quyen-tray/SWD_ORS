@@ -1,7 +1,7 @@
 package org.ors.cross.Iam.security.jwt;
 
-import com.sba301.ecommerce.security.user.CustomUserDetails;
-import com.sba301.ecommerce.security.user.CustomUserDetailsService;
+import org.ors.cross.Iam.security.user.CustomUserDetails;
+import org.ors.cross.Iam.security.user.CustomUserDetailsService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

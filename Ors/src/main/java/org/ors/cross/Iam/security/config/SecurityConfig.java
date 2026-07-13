@@ -1,6 +1,6 @@
 package org.ors.cross.Iam.security.config;
 
-import com.sba301.ecommerce.security.user.CustomUserDetailsService;
+import org.ors.cross.Iam.security.user.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -60,7 +60,9 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        // 5173 là cổng mặc định của Vite (ors-frontend chạy bằng Vite, không phải CRA),
+        // nên nếu chỉ để 3000 thì mọi request từ frontend đều bị CORS chặn.
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000"));
         configuration.setAllowCredentials(true);//cho phép mọi request dính kèm cookie
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
@@ -70,9 +72,13 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManagerBean() throws Exception {
-        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setUserDetailsService(customUserDetailsService);
+        // Spring Security 7 (đi kèm Boot 4.x) bỏ setUserDetailsService(): UserDetailsService
+        // phải truyền qua constructor.
+        DaoAuthenticationProvider daoAuthenticationProvider =
+                new DaoAuthenticationProvider(customUserDetailsService);
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
-        return new ProviderManager();
+        // Provider phải được đưa VÀO ProviderManager. new ProviderManager() rỗng thì không
+        // có provider nào, nên mọi lần xác thực đều ném ProviderNotFoundException.
+        return new ProviderManager(daoAuthenticationProvider);
     }
 }

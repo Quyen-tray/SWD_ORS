@@ -2,6 +2,8 @@ package org.ors.cross.share_kernel.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
@@ -15,7 +17,10 @@ import org.hibernate.annotations.Nationalized;
 @Entity
 @Table(name = "job_categories")
 public class JobCategory {
+    // job_categories.id là INT IDENTITY trong SQL Server. Không có @GeneratedValue thì
+    // Hibernate coi id là do code tự gán và cố INSERT id = null -> tạo danh mục mới sẽ lỗi.
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 

@@ -1,7 +1,7 @@
 package org.ors.cross.Iam.security.jwt;
 
 
-import com.sba301.ecommerce.security.user.CustomUserDetails;
+import org.ors.cross.Iam.security.user.CustomUserDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
