@@ -1,6 +1,8 @@
 package org.ors.cross.share_kernel.repository;
 
+import org.ors.cross.share_kernel.entity.RoleName;
 import org.ors.cross.share_kernel.entity.User;
+import org.ors.cross.share_kernel.entity.UserStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -24,5 +26,5 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("SELECT u FROM User u "
             + "WHERE (:role IS NULL OR u.role = :role) "
             + "AND (:status IS NULL OR u.status = :status)")
-    List<User> findByFilter(String role, String status);
+    List<User> findByFilter(RoleName role, UserStatus status);
 }

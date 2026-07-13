@@ -1,5 +1,7 @@
 package org.ors.subsystem.administration.user_management.state;
 
+import org.ors.cross.share_kernel.entity.UserStatus;
+
 // State pattern cho vòng đời tài khoản (BR-13, NFR-FE07-1).
 // Mỗi trạng thái là một class, tự trả lời cho riêng nó: activate / deactivate / ban thì
 // đi đâu. Nước đi không hợp lệ KHÔNG phải là một nhánh if bị thiếu, mà là một method ném
@@ -15,5 +17,5 @@ public interface AccountState {
 
     AccountState ban();
 
-    String status();
+    UserStatus status();
 }

@@ -2,6 +2,8 @@ package org.ors.cross.share_kernel.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
@@ -34,17 +36,19 @@ public class User {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
-    @Size(max = 50)
+    // Cột users.role và users.status là NVARCHAR có ràng buộc CHECK, tức chỉ nhận đúng một
+    // tập giá trị cố định. Dùng String thì gõ sai ("ACTIVEE") phải đợi tới lúc chạy mới bị
+    // SQL Server từ chối. Dùng enum + @Enumerated(EnumType.STRING) thì trình biên dịch bắt
+    // ngay, mà cột trong DB vẫn là NVARCHAR như cũ - KHÔNG phải đổi schema.
     @NotNull
-    @Nationalized
+    @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 50)
-    private String role;
+    private RoleName role;
 
-    @Size(max = 50)
-    @Nationalized
+    @Enumerated(EnumType.STRING)
     @ColumnDefault("'EMAIL_PENDING'")
     @Column(name = "status", length = 50)
-    private String status;
+    private UserStatus status;
 
     @ColumnDefault("getdate()")
     @Column(name = "created_at")
