@@ -7,6 +7,8 @@ import org.ors.cross.share_kernel.exception.ResourceNotFoundException;
 import org.ors.cross.share_kernel.repository.UserRepository;
 import org.ors.subsystem.administration.audit.AuditLogService;
 import org.ors.subsystem.administration.user_management.dto.UserResponse;
+import org.ors.subsystem.administration.user_management.lookup.UserCriteria;
+import org.ors.subsystem.administration.user_management.lookup.UserLookupSelector;
 import org.ors.subsystem.administration.user_management.state.AccountState;
 import org.ors.subsystem.administration.user_management.state.AccountStates;
 import org.springframework.security.core.Authentication;
@@ -24,22 +26,23 @@ public class UserService implements IUserService {
 
     private final UserRepository userRepository;
     private final AuditLogService auditLogService;
+    private final UserLookupSelector userLookupSelector;
 
-    public UserService(UserRepository userRepository, AuditLogService auditLogService) {
+    public UserService(UserRepository userRepository,
+                       AuditLogService auditLogService,
+                       UserLookupSelector userLookupSelector) {
         this.userRepository = userRepository;
         this.auditLogService = auditLogService;
+        this.userLookupSelector = userLookupSelector;
     }
 
     @Override
     public List<UserResponse> getUsers(String keyword, String role, String status) {
-        List<User> users;
-        if (keyword != null && !keyword.isBlank()) {
-            users = userRepository.findByKeyword(keyword.trim());
-        } else if ((role != null && !role.isBlank()) || (status != null && !status.isBlank())) {
-            users = userRepository.findByFilter(blankToNull(role), blankToNull(status));
-        } else {
-            users = userRepository.findAll();
-        }
+        // Strategy pattern: 3 cách tra cứu của UC-53 (từ khoá / lọc / lấy tất cả) mỗi cách
+        // là một class riêng, không còn nằm chung trong một chuỗi if/else ở đây. Service
+        // chỉ nói "tra cứu theo tiêu chí này", không quyết định tra cứu bằng cách nào.
+        // Xem package user_management.lookup.
+        List<User> users = userLookupSelector.lookup(UserCriteria.of(keyword, role, status));
         return users.stream().map(UserResponse::from).toList();
     }
 
@@ -109,9 +112,5 @@ public class UserService implements IUserService {
         }
         return userRepository.findUserByEmail(ADMIN_EMAIL_FALLBACK)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài khoản admin"));
-    }
-
-    private String blankToNull(String value) {
-        return (value == null || value.isBlank()) ? null : value;
     }
 }
