@@ -49,4 +49,14 @@ export const ENDPOINTS = {
     stats: '/recruiter/reports/stats',
     export: '/recruiter/reports/export',
   },
+  candidate: {
+    profile: (userId) => `/candidate/cvs/profile/${userId}`,
+    applications: (candidateId) => `/candidate/applications/${candidateId}`,
+    apply: (candidateId) => `/candidate/applications/${candidateId}/apply`,
+    withdraw: (appId) => `/candidate/applications/${appId}/withdraw`,
+    dashboard: (candidateId) => `/candidate/applications/${candidateId}/dashboard`,
+    notifications: (candidateId) => `/candidate/applications/${candidateId}/notifications`,
+    savedJobs: (candidateId) => `/candidate/jobs/saved/${candidateId}`,
+    toggleSavedJob: (candidateId) => `/candidate/jobs/saved/${candidateId}/toggle`,
+  },
 };

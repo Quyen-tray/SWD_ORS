@@ -1,14 +1,13 @@
 package org.ors.subsystem.candidate.job_search.controller;
 
+import org.ors.cross.share_kernel.entity.SavedJob;
 import org.ors.subsystem.candidate.job_search.service.IJobSearchService;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 // UC-68, UC-69, UC-70 - Tim kiem tin tuyen dung, luu tin, ung tuyen.
-//
-// KHUNG (base). Nguoi phu trach phan nay dien endpoint vao day.
-// Mau da hoan chinh de tham chieu: subsystem/administration/user_management
-// (controller + service + interface + dto + state pattern + audit).
 //
 // Quy uoc:
 //   - Path o day KHONG co /api/v1: context-path da khai bao trong application.properties.
@@ -24,5 +23,21 @@ public class JobSearchController {
         this.jobSearchService = jobSearchService;
     }
 
-    // TODO: them cac endpoint cua UC-68, UC-69, UC-70.
+    // UC-69 Scenario B: Lấy danh sách việc đã lưu (Saved Jobs).
+    @GetMapping("/saved/{candidateId}")
+    public ResponseEntity<List<SavedJob>> getSavedJobs(@PathVariable Integer candidateId) {
+        return ResponseEntity.ok(jobSearchService.getSavedJobs(candidateId));
+    }
+
+    // UC-69 Scenario A: Toggle save/unsave một job posting.
+    @PostMapping("/saved/{candidateId}/toggle")
+    public ResponseEntity<String> toggleSavedJob(
+            @PathVariable Integer candidateId,
+            @RequestParam Integer jobPostId) {
+        return ResponseEntity.ok(jobSearchService.toggleSavedJob(candidateId, jobPostId));
+    }
+
+    // TODO: UC-68 - Thêm endpoints tìm kiếm và xem chi tiết:
+    //   GET /candidate/jobs/search?keyword=&category=&location=&type=&salary=&sort=&page=
+    //   GET /candidate/jobs/{jobPostId}
 }
