@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Nationalized;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Getter
@@ -43,5 +44,13 @@ public class JobApplication {
     @ColumnDefault("getdate()")
     @Column(name = "applied_at")
     private Instant appliedAt;
+
+    @Column(name = "rating", precision = 3, scale = 1)
+    private BigDecimal rating;
+
+    @Size(max = 500)
+    @Nationalized
+    @Column(name = "rejection_reason", length = 500)
+    private String rejectionReason;
 
 }

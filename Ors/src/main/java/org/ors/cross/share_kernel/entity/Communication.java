@@ -2,6 +2,7 @@ package org.ors.cross.share_kernel.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
@@ -40,5 +41,22 @@ public class Communication {
     @ColumnDefault("getdate()")
     @Column(name = "sent_at")
     private Instant sentAt;
+
+    @Size(max = 20)
+    @NotNull
+    @ColumnDefault("'MESSAGE'")
+    @Column(name = "type", nullable = false, length = 20)
+    private String type;
+
+    @Size(max = 255)
+    @Nationalized
+    @Column(name = "subject")
+    private String subject;
+
+    @NotNull
+    @ColumnDefault("0")
+    @Column(name = "is_read", nullable = false)
+    private Boolean isRead;
+
 
 }
