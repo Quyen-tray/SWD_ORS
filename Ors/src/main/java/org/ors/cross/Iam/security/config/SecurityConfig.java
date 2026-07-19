@@ -55,7 +55,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // PATCH thêm vào (thiếu sẵn từ trước) vì UC-04/UC-07 dùng PATCH
+        // /applications/{id}/status (ApplicationStatusController) - khớp
+        // pipelineApi.updateStatus() bên frontend dùng httpClient.patch(). Thiếu PATCH ở
+        // đây thì trình duyệt chặn ngay từ bước CORS preflight, request không tới được
+        // backend, và lỗi hiện ra chỉ là "Network Error" mơ hồ chứ không phải lỗi 4xx.
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         // 5173 là cổng mặc định của Vite (ors-frontend chạy bằng Vite, không phải CRA),
         // nên nếu chỉ để 3000 thì mọi request từ frontend đều bị CORS chặn. Không để dấu "/"

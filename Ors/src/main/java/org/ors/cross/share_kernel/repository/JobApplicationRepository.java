@@ -16,15 +16,19 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
     // UC-71: Lấy danh sách đơn ứng tuyển của candidate.
     List<JobApplication> findByCandidate_Id(Integer candidateId);
 
-    // UC-70 (BR-03): Kiểm tra đã ứng tuyển vị trí này chưa (Single Application Limit).
+    // UC-70 (BR-03): Kiểm tra đã ứng tuyển vị trí này chưa (Single Application
+    // Limit).
     Optional<JobApplication> findByCandidate_IdAndJobPost_Id(Integer candidateId, Integer jobPostId);
 
     // UC-73: Đếm tổng số đơn đã nộp cho dashboard.
     long countByCandidate_Id(Integer candidateId);
 
-    // UC-01 (candidate_management, nhánh Strategy KeywordSearchStrategy) - Recruiter gõ
-    // từ khoá, khớp trên tên hoặc email ứng viên, chỉ trong công ty của Recruiter đang
-    // đăng nhập. JOIN FETCH để CandidateSummaryResponse đọc candidate/jobPost/cv được
+    // UC-01 (candidate_management, nhánh Strategy KeywordSearchStrategy) -
+    // Recruiter gõ
+    // từ khoá, khớp trên tên hoặc email ứng viên, chỉ trong công ty của Recruiter
+    // đang
+    // đăng nhập. JOIN FETCH để CandidateSummaryResponse đọc candidate/jobPost/cv
+    // được
     // ngay, không cần mở lại transaction ở tầng service.
     @Query("SELECT ja FROM JobApplication ja "
             + "JOIN FETCH ja.candidate c "
@@ -35,7 +39,8 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
             + "     OR LOWER(c.user.email) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     List<JobApplication> findByCompanyAndKeyword(Integer companyId, String keyword);
 
-    // UC-01 (nhánh JobStatusFilterStrategy) - lọc theo tin tuyển dụng và/hoặc trạng thái.
+    // UC-01 (nhánh JobStatusFilterStrategy) - lọc theo tin tuyển dụng và/hoặc trạng
+    // thái.
     // Truyền null cho tiêu chí không lọc.
     @Query("SELECT ja FROM JobApplication ja "
             + "JOIN FETCH ja.candidate "
@@ -46,7 +51,8 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
             + "AND (:status IS NULL OR ja.status = :status)")
     List<JobApplication> findByCompanyAndFilter(Integer companyId, Integer jobPostId, String status);
 
-    // UC-01 (nhánh ListAllStrategy) - chưa nhập từ khoá lẫn bộ lọc thì lấy hết đơn ứng
+    // UC-01 (nhánh ListAllStrategy) - chưa nhập từ khoá lẫn bộ lọc thì lấy hết đơn
+    // ứng
     // tuyển của công ty.
     @Query("SELECT ja FROM JobApplication ja "
             + "JOIN FETCH ja.candidate "
@@ -54,4 +60,15 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
             + "JOIN FETCH ja.cv "
             + "WHERE jp.company.id = :companyId")
     List<JobApplication> findByCompany(Integer companyId);
+
+    // UC-04/UC-07 (candidate_management.state) - đổi trạng thái pipeline. JOIN
+    // FETCH
+    // jobPost + company để ApplicationStatusService kiểm tra đơn này có thuộc công
+    // ty
+    // của Recruiter đang đăng nhập không, mà không cần mở lại transaction.
+    @Query("SELECT ja FROM JobApplication ja "
+            + "JOIN FETCH ja.jobPost jp "
+            + "JOIN FETCH jp.company "
+            + "WHERE ja.id = :applicationId")
+    Optional<JobApplication> findWithJobPostAndCompanyById(Integer applicationId);
 }
