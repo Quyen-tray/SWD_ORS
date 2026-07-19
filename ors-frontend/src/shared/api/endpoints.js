@@ -60,4 +60,20 @@ export const ENDPOINTS = {
     savedJobs: (candidateId) => `/candidate/jobs/saved/${candidateId}`,
     toggleSavedJob: (candidateId) => `/candidate/jobs/saved/${candidateId}/toggle`,
   },
+  // Moderation (2.3) — UC-45..50, Report Moderation.
+  moderation: {
+    dashboard: {
+      summary: '/moderation/dashboard',
+    },
+    reports: {
+      queue: '/moderation/reports', // query: ?status=&sort=
+      detail: (id) => `/moderation/reports/${id}`,
+      investigate: (id) => `/moderation/reports/${id}/investigate`,
+      resolve: (id) => `/moderation/reports/${id}/resolve`, // body: { enforcementActions, resolutionSummary }
+      close: (id) => `/moderation/reports/${id}/close`, // body: { closureReason, note }
+    },
+    auditLogs: {
+      list: '/moderation/audit-logs', // query: ?moderatorId=&entityType=&entityId=&actionType=&from=&to=&mineOnly=
+    },
+  },
 };

@@ -11,4 +11,7 @@ import org.springframework.stereotype.Repository;
 public interface JobPostRepository extends JpaRepository<JobPost, Integer> {
 
     boolean existsByCategoryIdAndStatus(Integer categoryId, String status);
+
+    // UC-49 - đếm tin đang chờ duyệt cho panel Dashboard (Facade).
+    long countByValidationStatus(String validationStatus);
 }

@@ -15,7 +15,11 @@ import java.time.Instant;
 @Entity
 @Table(name = "moderation_actions")
 public class ModerationAction {
+    // moderation_actions.id là INT IDENTITY trong SQL Server (xem chú thích tương tự ở
+    // JobCategory/AuditLog). Không có @GeneratedValue thì Hibernate cố INSERT id = null khi
+    // tạo ModerationAction mới -> UC-47/48 (resolve/close) sẽ lỗi ngay lần ghi đầu tiên.
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 

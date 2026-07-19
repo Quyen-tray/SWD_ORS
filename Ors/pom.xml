@@ -73,6 +73,14 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+        <!-- spring-boot-starter-test: mang theo JUnit Jupiter + Mockito + AssertJ. Các
+             artifact spring-boot-starter-*-test riêng lẻ bên dưới KHÔNG có Mockito, nên
+             test cho State/Strategy (dùng @Mock) sẽ không compile nếu thiếu dependency này. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa-test</artifactId>

@@ -8,4 +8,7 @@ import org.springframework.stereotype.Repository;
 // Them cac query method rieng cua phan minh vao day (vd findByCompanyId, existsBy...).
 @Repository
 public interface CompanyRepository extends JpaRepository<Company, Integer> {
+
+    // UC-49 - đếm công ty đang chờ xác minh cho panel Dashboard (Facade).
+    long countByVerificationStatus(String verificationStatus);
 }
