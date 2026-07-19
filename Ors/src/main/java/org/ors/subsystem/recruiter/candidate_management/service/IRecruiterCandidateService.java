@@ -1,23 +1,19 @@
 package org.ors.subsystem.recruiter.candidate_management.service;
 
-// UC-22..UC-32 - Xem, loc, danh gia ung vien ung tuyen; len lich phong van.
+import org.ors.subsystem.recruiter.candidate_management.dto.CandidateListResponse;
+
+// UC-01 (candidate_management, scope hiện tại chỉ gồm UC-01, UC-04, UC-05, UC-06, UC-07 -
+// xem 00_KE_HOACH_TONG_QUAN.md). UC-02 (Proxy) và các UC khác đã bị loại khỏi phạm vi.
 //
-// Controller phu thuoc vao interface nay chu khong phu thuoc vao lop hien thuc,
-// nen co the thay hoac mock phan hien thuc ma khong dung toi controller.
+// Controller phụ thuộc vào interface này chứ không phụ thuộc vào lớp hiện thực, nên có
+// thể thay hoặc mock phần hiện thực mà không đụng tới controller.
 public interface IRecruiterCandidateService {
 
-    // TODO
-    // Object getCandidates(filters);
-
-    // TODO
-    // Object getCandidateDetail(id);
-
-    // TODO
-    // Object updateApplicationStatus(id, request);
-
-    // TODO
-    // Object scheduleInterview(request);
-
-    // TODO
-    // Object recordEvaluation(request);
+    // UC-01: xem danh sách, tìm theo từ khoá, lọc theo tin tuyển dụng và trạng
+    // thái,
+    // phân trang - chỉ trong công ty của Recruiter đang đăng nhập. Xem package
+    // .lookup
+    // (Strategy pattern).
+    CandidateListResponse getCandidates(String keyword, String jobPostId, String status,
+            int page, int pageSize);
 }
