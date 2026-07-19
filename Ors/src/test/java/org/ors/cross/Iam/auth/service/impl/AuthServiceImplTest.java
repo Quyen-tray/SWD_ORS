@@ -3,16 +3,18 @@ package org.ors.cross.Iam.auth.service.impl;
 import org.junit.jupiter.api.Test;
 import org.ors.cross.Iam.auth.dtos.RegisterRecruiterDTO;
 import org.ors.cross.Iam.auth.email.EmailService;
-import org.ors.cross.Iam.auth.repositories.CompanyRepository;
-import org.ors.cross.Iam.auth.repositories.PasswordResetTokenRepository;
-import org.ors.cross.Iam.auth.repositories.RecruiterProfileRepository;
-import org.ors.cross.Iam.auth.repositories.UserRefreshTokenRepository;
-import org.ors.cross.Iam.auth.repositories.UserRepository;
-import org.ors.cross.Iam.auth.repositories.VerificationTokenRepository;
 import org.ors.cross.Iam.security.jwt.JwtService;
+import org.ors.cross.share_kernel.repository.CompanyRepository;
+import org.ors.cross.share_kernel.repository.PasswordResetTokenRepository;
+import org.ors.cross.share_kernel.repository.RecruiterProfileRepository;
+import org.ors.cross.share_kernel.repository.UserRefreshTokenRepository;
+import org.ors.cross.share_kernel.repository.UserRepository;
+import org.ors.cross.share_kernel.repository.VerificationTokenRepository;
 import org.ors.cross.share_kernel.entity.Company;
 import org.ors.cross.share_kernel.entity.RecruiterProfile;
+import org.ors.cross.share_kernel.entity.RoleName;
 import org.ors.cross.share_kernel.entity.User;
+import org.ors.cross.share_kernel.entity.UserStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -42,8 +44,8 @@ class AuthServiceImplTest {
         User savedUser = new User();
         savedUser.setId(101);
         savedUser.setEmail("recruiter@example.com");
-        savedUser.setRole("RECRUITER");
-        savedUser.setStatus("EMAIL_PENDING");
+        savedUser.setRole(RoleName.RECRUITER);
+        savedUser.setStatus(UserStatus.EMAIL_PENDING);
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
         Company savedCompany = new Company();

@@ -1,6 +1,9 @@
 package org.ors.cross.share_kernel.exception;
 
-// TODO: ném khi không tìm thấy resource (product/category/order/cart item...). Map -> HTTP 404 trong GlobalExceptionHandler.
-//       Thêm constructor (String message) { super(message); }
+// Ném khi không tìm thấy resource. Map -> HTTP 404 trong GlobalExceptionHandler.
 public class ResourceNotFoundException extends RuntimeException {
+
+    public ResourceNotFoundException(String message) {
+        super(message);
+    }
 }

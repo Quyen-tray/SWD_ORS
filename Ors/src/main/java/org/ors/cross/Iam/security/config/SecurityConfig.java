@@ -57,8 +57,11 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowedOrigins(List.of("http://localhost:5173/"));
-        configuration.setAllowCredentials(true);
+        // 5173 là cổng mặc định của Vite (ors-frontend chạy bằng Vite, không phải CRA),
+        // nên nếu chỉ để 3000 thì mọi request từ frontend đều bị CORS chặn. Không để dấu "/"
+        // ở cuối origin - CORS so khớp chính xác, có "/" thừa sẽ khiến trình duyệt chặn hết.
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000"));
+        configuration.setAllowCredentials(true);//cho phép mọi request dính kèm cookie
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
 

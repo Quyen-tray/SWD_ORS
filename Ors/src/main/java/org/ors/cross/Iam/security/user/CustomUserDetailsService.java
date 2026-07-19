@@ -1,7 +1,7 @@
 package org.ors.cross.Iam.security.user;
 
-import org.ors.cross.Iam.auth.repositories.UserRepository;
 import org.ors.cross.share_kernel.entity.User;
+import org.ors.cross.share_kernel.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

@@ -33,6 +33,23 @@
  * @property {string=} message
  */
 
+/**
+ * Khớp job_reports.status ở backend (Moderation, UC-45..48). Cột DB là NVARCHAR tự do,
+ * không CHECK - enum này chỉ để tránh hardcode chuỗi rải rác ở feature moderator.
+ * @typedef {'PENDING'|'UNDER_INVESTIGATION'|'RESOLVED'|'CLOSED'} ReportStatus
+ */
+
+/**
+ * UC-47 - một report có thể chọn nhiều hành động xử lý cùng lúc (AF-01).
+ * @typedef {'REMOVE_POSTING'|'SUSPEND_COMPANY'|'ISSUE_WARNING'} EnforcementType
+ */
+
+/**
+ * UC-48 - lý do đóng report, bắt buộc chọn.
+ * @typedef {'NO_VIOLATION_FOUND'|'DUPLICATE_REPORT'|'REPORTER_ERROR'|
+ *   'ENTITY_ALREADY_REMOVED'|'OTHER'} ClosureReason
+ */
+
 export const APPLICATION_STATUS = /** @type {const} */ ({
   SUBMITTED: 'SUBMITTED',
   UNDER_REVIEW: 'UNDER_REVIEW',
@@ -49,4 +66,25 @@ export const INTERVIEW_OUTCOME = /** @type {const} */ ({
   PASS: 'PASS',
   FAIL: 'FAIL',
   SECOND_ROUND: 'SECOND_ROUND',
+});
+
+export const REPORT_STATUS = /** @type {const} */ ({
+  PENDING: 'PENDING',
+  UNDER_INVESTIGATION: 'UNDER_INVESTIGATION',
+  RESOLVED: 'RESOLVED',
+  CLOSED: 'CLOSED',
+});
+
+export const ENFORCEMENT_TYPE = /** @type {const} */ ({
+  REMOVE_POSTING: 'REMOVE_POSTING',
+  SUSPEND_COMPANY: 'SUSPEND_COMPANY',
+  ISSUE_WARNING: 'ISSUE_WARNING',
+});
+
+export const CLOSURE_REASON = /** @type {const} */ ({
+  NO_VIOLATION_FOUND: 'NO_VIOLATION_FOUND',
+  DUPLICATE_REPORT: 'DUPLICATE_REPORT',
+  REPORTER_ERROR: 'REPORTER_ERROR',
+  ENTITY_ALREADY_REMOVED: 'ENTITY_ALREADY_REMOVED',
+  OTHER: 'OTHER',
 });

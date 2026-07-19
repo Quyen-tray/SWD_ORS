@@ -30,6 +30,12 @@
         <java.version>21</java.version>
     </properties>
     <dependencies>
+        <!-- REST controllers + embedded Tomcat. Without this there is no @RestController and
+             no HTTP server at all: spring-boot-starter-webservices below is SOAP, not REST. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -67,6 +73,14 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+        <!-- spring-boot-starter-test: mang theo JUnit Jupiter + Mockito + AssertJ. Các
+             artifact spring-boot-starter-*-test riêng lẻ bên dưới KHÔNG có Mockito, nên
+             test cho State/Strategy (dùng @Mock) sẽ không compile nếu thiếu dependency này. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa-test</artifactId>
@@ -92,6 +106,9 @@
             <artifactId>spring-boot-starter-webservices-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- JJWT: các import io.jsonwebtoken trong cross/Iam/security/jwt cần dependency này
+             mới compile được. 0.11.5 (không phải 0.12.x) vì JwtService.java hiện dùng API
+             cũ (setClaims/parserBuilder) - đừng khai báo song song 2 version jjwt khác nhau. -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>

@@ -17,7 +17,9 @@ import java.time.Instant;
 @Entity
 @Table(name = "audit_logs")
 public class AuditLog {
+    // audit_logs.id là INT IDENTITY trong SQL Server (xem chú thích tương tự ở JobCategory).
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 

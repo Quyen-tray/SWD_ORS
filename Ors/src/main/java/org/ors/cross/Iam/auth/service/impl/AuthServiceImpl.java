@@ -4,20 +4,22 @@ import org.ors.cross.Iam.auth.dtos.LoginRequest;
 import org.ors.cross.Iam.auth.dtos.RegisterRecruiterDTO;
 import org.ors.cross.Iam.auth.dtos.TokenResponse;
 import org.ors.cross.Iam.auth.email.EmailService;
-import org.ors.cross.Iam.auth.repositories.CompanyRepository;
-import org.ors.cross.Iam.auth.repositories.PasswordResetTokenRepository;
-import org.ors.cross.Iam.auth.repositories.RecruiterProfileRepository;
-import org.ors.cross.Iam.auth.repositories.UserRefreshTokenRepository;
-import org.ors.cross.Iam.auth.repositories.UserRepository;
-import org.ors.cross.Iam.auth.repositories.VerificationTokenRepository;
 import org.ors.cross.Iam.auth.service.AuthService;
+import org.ors.cross.share_kernel.repository.CompanyRepository;
+import org.ors.cross.share_kernel.repository.PasswordResetTokenRepository;
+import org.ors.cross.share_kernel.repository.RecruiterProfileRepository;
+import org.ors.cross.share_kernel.repository.UserRefreshTokenRepository;
+import org.ors.cross.share_kernel.repository.UserRepository;
+import org.ors.cross.share_kernel.repository.VerificationTokenRepository;
 import org.ors.cross.share_kernel.entity.Company;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.ors.cross.share_kernel.entity.PasswordResetToken;
 import org.ors.cross.share_kernel.entity.RecruiterProfile;
+import org.ors.cross.share_kernel.entity.RoleName;
 import org.ors.cross.share_kernel.entity.User;
 import org.ors.cross.share_kernel.entity.UserRefreshToken;
+import org.ors.cross.share_kernel.entity.UserStatus;
 import org.ors.cross.share_kernel.entity.VerificationToken;
 import org.ors.cross.Iam.security.jwt.JwtService;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -90,8 +92,8 @@ public class AuthServiceImpl implements AuthService {
         User user = new User();
         user.setEmail(dto.email());
         user.setPasswordHash(passwordEncoder.encode(dto.password()));
-        user.setRole("RECRUITER");
-        user.setStatus("ACTIVE");
+        user.setRole(RoleName.RECRUITER);
+        user.setStatus(UserStatus.ACTIVE);
         user = userRepository.save(user);
 
         Company company = new Company();
@@ -131,11 +133,11 @@ public class AuthServiceImpl implements AuthService {
         }
 
         User user = vt.getUser();
-        if ("ACTIVE".equalsIgnoreCase(user.getStatus())) {
+        if (UserStatus.ACTIVE == user.getStatus()) {
             return;
         }
 
-        user.setStatus("ACTIVE");
+        user.setStatus(UserStatus.ACTIVE);
         userRepository.save(user);
 
         verificationTokenRepository.deleteByUser(user);
@@ -146,7 +148,7 @@ public class AuthServiceImpl implements AuthService {
         Optional<User> ou = userRepository.findUserByEmail(email);
         if (ou.isEmpty()) return;
         User user = ou.get();
-        if (!"EMAIL_PENDING".equalsIgnoreCase(user.getStatus())) return;
+        if (UserStatus.EMAIL_PENDING != user.getStatus()) return;
 
         verificationTokenRepository.deleteByUser(user);
         VerificationToken token = new VerificationToken();
@@ -215,11 +217,11 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findUserByEmail(request.email())
                 .orElseThrow(() -> new IllegalStateException("User not found after authentication"));
 
-        if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
+        if (UserStatus.ACTIVE != user.getStatus()) {
             throw new IllegalArgumentException("Account is not active. Please verify your email or contact support.");
         }
 
-        String access = jwtService.generateJwtToken(user.getEmail(), user.getRole(), user.getId().toString());
+        String access = jwtService.generateJwtToken(user.getEmail(), user.getRole().name(), user.getId().toString());
         String refresh = jwtService.generateRefreshToken(user.getEmail(), user.getId().toString());
 
         userRefreshTokenRepository.deleteByUser(user);
@@ -230,7 +232,7 @@ public class AuthServiceImpl implements AuthService {
         urt.setExpiresAt(Instant.now().plus(30, ChronoUnit.DAYS));
         userRefreshTokenRepository.save(urt);
 
-        return new TokenResponse(access, refresh, jwtService.getAllClaims(access).getExpiration().getTime(), user.getId(), user.getRole());
+        return new TokenResponse(access, refresh, jwtService.getAllClaims(access).getExpiration().getTime(), user.getId(), user.getRole().name());
     }
 
     @Override
@@ -255,7 +257,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findUserByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        String newAccess = jwtService.generateJwtToken(user.getEmail(), user.getRole(), user.getId().toString());
+        String newAccess = jwtService.generateJwtToken(user.getEmail(), user.getRole().name(), user.getId().toString());
         String newRefresh = jwtService.generateRefreshToken(user.getEmail(), user.getId().toString());
 
         userRefreshTokenRepository.deleteByUser(user);
@@ -265,7 +267,7 @@ public class AuthServiceImpl implements AuthService {
         urt.setExpiresAt(Instant.now().plus(30, ChronoUnit.DAYS));
         userRefreshTokenRepository.save(urt);
 
-        return new TokenResponse(newAccess, newRefresh, jwtService.getAllClaims(newAccess).getExpiration().getTime(), user.getId(), user.getRole());
+        return new TokenResponse(newAccess, newRefresh, jwtService.getAllClaims(newAccess).getExpiration().getTime(), user.getId(), user.getRole().name());
     }
 
     @Override
