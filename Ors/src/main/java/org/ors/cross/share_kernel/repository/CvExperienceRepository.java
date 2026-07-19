@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 // Them cac query method rieng cua phan minh vao day (vd findByCompanyId, existsBy...).
 @Repository
 public interface CvExperienceRepository extends JpaRepository<CvExperience, Integer> {
+    void deleteByCv_Id(Integer cvId);
+    java.util.List<CvExperience> findByCv_Id(Integer cvId);
 }

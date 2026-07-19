@@ -18,4 +18,7 @@ public interface SavedJobRepository extends JpaRepository<SavedJob, SavedJobId> 
 
     // UC-69: Tìm bookmark cụ thể để toggle save/unsave.
     Optional<SavedJob> findById_CandidateIdAndId_JobPostId(Integer candidateId, Integer jobPostId);
+
+    // Đếm số lượng tin đã lưu cho dashboard.
+    long countById_CandidateId(Integer candidateId);
 }

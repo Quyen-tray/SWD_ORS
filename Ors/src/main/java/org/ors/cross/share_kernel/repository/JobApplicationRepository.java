@@ -20,4 +20,7 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
 
     // UC-73: Đếm tổng số đơn đã nộp cho dashboard.
     long countByCandidate_Id(Integer candidateId);
+
+    // Kiểm tra xem CV có đang được dùng trong đơn tuyển dụng nào không.
+    boolean existsByCv_Id(Integer cvId);
 }

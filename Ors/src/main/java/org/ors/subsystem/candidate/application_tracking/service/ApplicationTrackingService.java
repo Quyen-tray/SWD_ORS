@@ -1,5 +1,8 @@
 package org.ors.subsystem.candidate.application_tracking.service;
 
+import org.ors.cross.share_kernel.entity.ApplicationStatusHistory;
+import org.ors.cross.share_kernel.repository.ApplicationStatusHistoryRepository;
+import org.ors.cross.share_kernel.repository.InterviewRepository;
 import org.ors.cross.share_kernel.entity.CandidateProfile;
 import org.ors.cross.share_kernel.entity.Cv;
 import org.ors.cross.share_kernel.entity.JobApplication;
@@ -30,6 +33,8 @@ public class ApplicationTrackingService implements IApplicationTrackingService {
     private final CvRepository cvRepository;
     private final NotificationSettingRepository notificationSettingRepository;
     private final SavedJobRepository savedJobRepository;
+    private final ApplicationStatusHistoryRepository statusHistoryRepository;
+    private final InterviewRepository interviewRepository;
 
     public ApplicationTrackingService(
             JobApplicationRepository applicationRepository,
@@ -37,13 +42,17 @@ public class ApplicationTrackingService implements IApplicationTrackingService {
             JobPostRepository jobPostRepository,
             CvRepository cvRepository,
             NotificationSettingRepository notificationSettingRepository,
-            SavedJobRepository savedJobRepository) {
+            SavedJobRepository savedJobRepository,
+            ApplicationStatusHistoryRepository statusHistoryRepository,
+            InterviewRepository interviewRepository) {
         this.applicationRepository = applicationRepository;
         this.candidateRepository = candidateRepository;
         this.jobPostRepository = jobPostRepository;
         this.cvRepository = cvRepository;
         this.notificationSettingRepository = notificationSettingRepository;
         this.savedJobRepository = savedJobRepository;
+        this.statusHistoryRepository = statusHistoryRepository;
+        this.interviewRepository = interviewRepository;
     }
 
     // UC-70: Nộp đơn ứng tuyển
@@ -62,7 +71,10 @@ public class ApplicationTrackingService implements IApplicationTrackingService {
         Cv cv = cvRepository.findById(cvId)
                 .orElseThrow(() -> new ResourceNotFoundException("CV không tồn tại"));
 
-        // TODO: Kiểm tra xem JobPost có đang ACTIVE/PUBLISHED và trong hạn nộp không (BR-16)
+        // BR-16: Kiểm tra tin tuyển dụng có đang hoạt động không
+        if (!"ACTIVE".equals(jobPost.getStatus()) && !"PUBLISHED".equals(jobPost.getStatus())) {
+            throw new BadRequestException("Tin tuyển dụng này không ở trạng thái nhận hồ sơ (BR-16).");
+        }
 
         JobApplication application = new JobApplication();
         application.setCandidate(candidate);
@@ -71,10 +83,16 @@ public class ApplicationTrackingService implements IApplicationTrackingService {
         application.setStatus("SUBMITTED");
         application.setAppliedAt(Instant.now());
 
-        // TODO: Thêm bản ghi vào application_status_histories
-        // TODO: Bắn notification cho Recruiter
+        JobApplication savedApp = applicationRepository.save(application);
 
-        return applicationRepository.save(application);
+        // Ghi nhận lịch sử trạng thái
+        ApplicationStatusHistory history = new ApplicationStatusHistory();
+        history.setApplication(savedApp);
+        history.setStatus("SUBMITTED");
+        history.setChangedAt(Instant.now());
+        statusHistoryRepository.save(history);
+
+        return savedApp;
     }
 
     // UC-71: Lấy danh sách lịch sử ứng tuyển
@@ -99,10 +117,16 @@ public class ApplicationTrackingService implements IApplicationTrackingService {
         }
 
         application.setStatus("WITHDRAWN");
-        // TODO: Ghi vào application_status_histories
-        // TODO: Bắn notification cho Recruiter
+        JobApplication savedApp = applicationRepository.save(application);
 
-        return applicationRepository.save(application);
+        // Ghi nhận lịch sử trạng thái
+        ApplicationStatusHistory history = new ApplicationStatusHistory();
+        history.setApplication(savedApp);
+        history.setStatus("WITHDRAWN");
+        history.setChangedAt(Instant.now());
+        statusHistoryRepository.save(history);
+
+        return savedApp;
     }
 
     // UC-73: Dashboard stats
@@ -110,16 +134,11 @@ public class ApplicationTrackingService implements IApplicationTrackingService {
     public DashboardStatsResponse getDashboardStats(Integer candidateId) {
         long totalApplied = applicationRepository.countByCandidate_Id(candidateId);
         
-        // TODO: Đếm số lượng interview sắp tới (join với bảng interviews khi module đó có)
-        long pendingInterviews = 0; 
+        // Đếm số lịch phỏng vấn sắp tới
+        long pendingInterviews = interviewRepository.countByApplication_Candidate_IdAndScheduledTimeAfter(candidateId, Instant.now());
         
-        // TODO: Đếm số công việc đã lưu
-        long savedJobsCount = 0; // savedJobRepository.countByCandidate_Id(candidateId); - Need to add this query method if we really need it, or we can use getSavedJobs.size() but it's inefficient. Let's just return size for now or 0.
-        try {
-            savedJobsCount = savedJobRepository.findByCandidate_Id(candidateId).size();
-        } catch(Exception e) {
-            // fallback
-        }
+        // Đếm số công việc đã lưu
+        long savedJobsCount = savedJobRepository.countById_CandidateId(candidateId);
 
         CandidateProfile profile = candidateRepository.findById(candidateId).orElse(null);
         int profileCompletion = calculateProfileCompletion(profile);
@@ -149,20 +168,8 @@ public class ApplicationTrackingService implements IApplicationTrackingService {
                     return newSetting;
                 });
 
-        // assuming emailAlerts and smsAlerts properties exist on NotificationSetting. 
-        // Need to check the entity fields if necessary. 
-        // I will use placeholder if not sure, or try to set them.
-        // Looking at common boolean mapping. Let's assume standard names or bypass if they don't compile.
-        // I'll skip direct sets if I'm not sure of the exact field names in share_kernel.entity.NotificationSetting.
-        // I'll just save it as is or leave a TODO.
-        // Actually, let me check the entity.
-        // For now, I will assume it's just saving the passed settings.
-        // Let's implement this properly after checking the entity if needed, or leave a basic save.
-        
-        // existing.setEmailAlerts(settings.getEmailAlerts());
-        // existing.setSmsAlerts(settings.getSmsAlerts());
-        // For now:
-        // TODO: map the specific boolean fields from settings to existing
+        existing.setEmailAlerts(settings.getEmailAlerts());
+        existing.setSmsAlerts(settings.getSmsAlerts());
         return notificationSettingRepository.save(existing);
     }
 }

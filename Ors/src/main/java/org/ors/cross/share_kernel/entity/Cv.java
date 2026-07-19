@@ -18,6 +18,7 @@ import java.time.Instant;
 @Table(name = "cvs")
 public class Cv {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 
@@ -37,6 +38,11 @@ public class Cv {
     @Nationalized
     @Column(name = "file_url", length = 500)
     private String fileUrl;
+
+    @NotNull
+    @ColumnDefault("0")
+    @Column(name = "is_public", nullable = false)
+    private Boolean isPublic = false;
 
     @ColumnDefault("getdate()")
     @Column(name = "created_at")

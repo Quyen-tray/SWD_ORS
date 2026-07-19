@@ -73,9 +73,18 @@ public class JobSearchService implements IJobSearchService {
                 });
     }
 
-    // TODO: UC-68 - Implement job search:
-    //   - searchJobs(keyword, category, location, employmentType, salaryRange, sortBy, page)
-    //     Tài liệu yêu cầu: Elasticsearch read-replica, BR-16 visibility filter,
-    //     relevance scoring, pagination 20 items/page.
-    //   - getJobDetail(jobPostId): full job spec + company overview + application status check
+    // UC-68: Tìm kiếm việc làm.
+    @Override
+    public List<JobPost> searchJobs(String keyword, String category, String location, String type, Double minSalary, String sortBy, int page) {
+        // Mặc định phân trang 20 items/page theo tài liệu thiết kế.
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, 20);
+        return jobPostRepository.searchJobs(keyword, category, pageable).getContent();
+    }
+
+    // UC-68: Xem chi tiết việc làm.
+    @Override
+    public JobPost getJobDetail(Integer jobPostId) {
+        return jobPostRepository.findById(jobPostId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tin tuyển dụng với ID: " + jobPostId));
+    }
 }

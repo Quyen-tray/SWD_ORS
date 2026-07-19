@@ -18,6 +18,7 @@ import java.time.Instant;
 @Table(name = "application_status_histories")
 public class ApplicationStatusHistory {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 

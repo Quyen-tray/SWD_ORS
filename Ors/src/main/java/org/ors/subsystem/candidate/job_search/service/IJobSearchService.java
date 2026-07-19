@@ -1,5 +1,6 @@
 package org.ors.subsystem.candidate.job_search.service;
 
+import org.ors.cross.share_kernel.entity.JobPost;
 import org.ors.cross.share_kernel.entity.SavedJob;
 
 import java.util.List;
@@ -16,6 +17,9 @@ public interface IJobSearchService {
     // UC-69: Toggle save/unsave một job posting (bookmark).
     String toggleSavedJob(Integer candidateId, Integer jobPostId);
 
-    // TODO: UC-68 - searchJobs(keyword, filters), getJobDetail(jobPostId)
-    // TODO: UC-70 - applyForJob(candidateId, jobPostId, cvId) — đã đặt ở application_tracking
+    // UC-68: Tìm kiếm việc làm.
+    List<JobPost> searchJobs(String keyword, String category, String location, String type, Double minSalary, String sortBy, int page);
+
+    // UC-68: Xem chi tiết việc làm.
+    JobPost getJobDetail(Integer jobPostId);
 }

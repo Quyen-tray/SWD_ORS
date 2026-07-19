@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 // Them cac query method rieng cua phan minh vao day (vd findByCompanyId, existsBy...).
 @Repository
 public interface InterviewRepository extends JpaRepository<Interview, Integer> {
+    long countByApplication_Candidate_IdAndScheduledTimeAfter(Integer candidateId, java.time.Instant scheduledTime);
 }
