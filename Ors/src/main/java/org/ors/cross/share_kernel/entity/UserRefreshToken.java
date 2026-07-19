@@ -17,6 +17,7 @@ import java.time.Instant;
 @Table(name = "user_refresh_tokens")
 public class UserRefreshToken {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 

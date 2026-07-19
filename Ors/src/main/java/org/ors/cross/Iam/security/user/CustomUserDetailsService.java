@@ -1,7 +1,6 @@
 package org.ors.cross.Iam.security.user;
 
 import org.ors.cross.share_kernel.entity.User;
-import org.ors.cross.share_kernel.exception.BadRequestException;
 import org.ors.cross.share_kernel.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,7 +21,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository
                 .findUserByEmail(email)
-                .orElseThrow(() -> new BadRequestException("Email or password is incorrect"));
+                .orElseThrow(() -> new UsernameNotFoundException("Email or password is incorrect"));
 
         return new CustomUserDetails(user);
     }

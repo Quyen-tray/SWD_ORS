@@ -14,8 +14,7 @@ export const recruiterRoutes = [
     path: '/recruiter',
     element: <RecruiterLayout />,
     children: [
-      { index: true, element: <DashboardPage /> },
-      { path: 'dashboard', element: <DashboardPage /> },
+      {index: true, element: <DashboardPage /> },
       { path: 'candidates', element: <CandidateManagementPage /> },
       ...recruitmentWorkflowRoutes,
       { path: 'communication', element: <CommunicationPage /> },

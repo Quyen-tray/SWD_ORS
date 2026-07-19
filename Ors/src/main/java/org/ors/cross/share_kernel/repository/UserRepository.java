@@ -17,6 +17,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     Optional<User> findUserByEmail(String email);
 
+    boolean existsByEmail(String email);
+
     // UC-53 - tìm theo từ khoá (email). Bảng users không có cột name nên từ khoá
     // chỉ áp lên email, đúng với dữ liệu thật của schema.
     @Query("SELECT u FROM User u WHERE LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%'))")

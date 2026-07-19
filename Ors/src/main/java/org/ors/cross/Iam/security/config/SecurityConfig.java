@@ -1,56 +1,53 @@
 package org.ors.cross.Iam.security.config;
 
+import org.ors.cross.Iam.security.jwt.JwtAuthenticationFilter;
 import org.ors.cross.Iam.security.user.CustomUserDetailsService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
-// TODO: thêm @EnableWebSecurity @RequiredArgsConstructor (inject JwtAuthenticationFilter).
-//   Beans: PasswordEncoder(BCrypt), AuthenticationManager(từ AuthenticationConfiguration), CorsConfigurationSource(origin http://localhost:5173).
-//   SecurityFilterChain: cors() + csrf(disable) + sessionManagement(STATELESS)
-//     + addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-//   authorizeHttpRequests (path SAU context-path /api — KHÔNG thêm /api):
-//     permitAll: OPTIONS /**, /auth/**, GET /products/**, GET /categories/**, /swagger-ui/**, /swagger-ui.html, /v3/api-docs/**, /actuator/health
-//     hasRole("CUSTOMER"): /carts/**
-//     hasAnyRole("ADMIN","STAFF"): POST/PUT/DELETE products+categories, PUT /orders/*/status
-//     anyRequest().authenticated()
 @Configuration
+@EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
     private final CustomUserDetailsService customUserDetailsService;
     private final PasswordEncoder passwordEncoder;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Autowired
     public SecurityConfig(CustomUserDetailsService customUserDetailsService,
-                          PasswordEncoder passwordEncoder) {
+                          PasswordEncoder passwordEncoder,
+                          JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.customUserDetailsService = customUserDetailsService;
         this.passwordEncoder = passwordEncoder;
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf((csrf -> csrf.disable())) //Tắt csrf vì web restApi ko cần
-                .cors(cors ->cors.configurationSource(corsConfigurationSource())) //bật customs config cors có thể viết là Customizer.withDefaults()
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) //Vì dùng jwt nên tắt session
-                .authorizeHttpRequests((auth)->{
-                    auth
-                            .requestMatchers("/","/api/auth/**").permitAll()
-                            .anyRequest().permitAll(); //đang mở tất cả Api ko cần check
-                });
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/actuator/health").permitAll()
+                        .anyRequest().permitAll()
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -61,7 +58,8 @@ public class SecurityConfig {
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         // 5173 là cổng mặc định của Vite (ors-frontend chạy bằng Vite, không phải CRA),
-        // nên nếu chỉ để 3000 thì mọi request từ frontend đều bị CORS chặn.
+        // nên nếu chỉ để 3000 thì mọi request từ frontend đều bị CORS chặn. Không để dấu "/"
+        // ở cuối origin - CORS so khớp chính xác, có "/" thừa sẽ khiến trình duyệt chặn hết.
         configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000"));
         configuration.setAllowCredentials(true);//cho phép mọi request dính kèm cookie
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -71,14 +69,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        // Spring Security 7 (đi kèm Boot 4.x) bỏ setUserDetailsService(): UserDetailsService
-        // phải truyền qua constructor.
-        DaoAuthenticationProvider daoAuthenticationProvider =
-                new DaoAuthenticationProvider(customUserDetailsService);
-        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
-        // Provider phải được đưa VÀO ProviderManager. new ProviderManager() rỗng thì không
-        // có provider nào, nên mọi lần xác thực đều ném ProviderNotFoundException.
-        return new ProviderManager(daoAuthenticationProvider);
+    public AuthenticationManager authenticationManagerBean(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 }

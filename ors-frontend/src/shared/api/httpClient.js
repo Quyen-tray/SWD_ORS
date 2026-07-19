@@ -5,7 +5,7 @@ import { useAuthStore } from '../../app/store.js';
 // không import axios trực tiếp trong feature. Đây là nơi duy nhất biết
 // base URL, cách đính JWT, và cách xử lý lỗi 401 toàn cục.
 export const httpClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? '/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080/api/v1',
   timeout: 15000,
 });
 

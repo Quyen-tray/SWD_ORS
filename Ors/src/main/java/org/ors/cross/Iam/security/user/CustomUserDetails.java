@@ -34,15 +34,30 @@ public class CustomUserDetails implements UserDetails {
         return user.getEmail();
     }
 
+    public Integer getId() {
+        return user.getId();
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
     // Chỉ tài khoản ACTIVE mới đăng nhập được. INACTIVE (bị Admin tạm khoá), BANNED
     // (bị Admin cấm), EMAIL_PENDING (chưa xác thực email) và LOCKED đều bị chặn ở đây.
     @Override
     public boolean isEnabled() {
         return UserStatus.ACTIVE == user.getStatus();
-    }
-
-    public Integer getId() {
-        return user.getId();
     }
 
     public UserStatus getStatus() {
