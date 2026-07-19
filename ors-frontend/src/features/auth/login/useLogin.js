@@ -21,8 +21,13 @@ export function useLogin() {
     setIsLoading(true);
     setError(null);
     try {
-      const { user, token } = await authApi.login(credentials);
-      setSession(user, token);
+      const tokenResponse = await authApi.login(credentials);
+      const user = {
+        id: tokenResponse.userId ?? 0,
+        email: credentials.email,
+        role: tokenResponse.role ?? 'RECRUITER',
+      };
+      setSession(user, tokenResponse.accessToken);
       navigate(ROLE_HOME[user.role] ?? '/');
     } catch (err) {
       setError(err.response?.data?.message ?? 'Đăng nhập thất bại.');

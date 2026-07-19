@@ -1,9 +1,8 @@
 package org.ors.cross.Iam.security.user;
 
-import com.sba301.ecommerce.features.entities.User;
-import com.sba301.ecommerce.features.entities.enums.UserStatus;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.ors.cross.share_kernel.entity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,10 +10,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-// TODO: implements org.springframework.security.core.userdetails.UserDetails — bọc User entity.
-//   getUsername()=email, getPassword()=passwordHash,
-//   getAuthorities()=List.of(new SimpleGrantedAuthority("ROLE_"+user.getRole().name())),
-//   isEnabled()=user.getIsActive(); expose getUser() để lấy id không cần query lại.
 @Getter
 @RequiredArgsConstructor
 public class CustomUserDetails implements UserDetails {
@@ -22,11 +17,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(
-                new SimpleGrantedAuthority(
-                        user.getRole().name()
-                )
-        );
+        return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
     }
 
     @Override
@@ -39,15 +30,27 @@ public class CustomUserDetails implements UserDetails {
         return user.getEmail();
     }
 
-    public Long getId(){
+    public Integer getId() {
         return user.getId();
     }
 
-    public UserStatus getStatus(){
-        return user.getStatus();
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
     }
 
-    public String getEmail(){
-        return user.getEmail();
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return "ACTIVE".equalsIgnoreCase(user.getStatus());
     }
 }

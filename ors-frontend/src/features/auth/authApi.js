@@ -7,6 +7,10 @@ export const authApi = {
     const { data } = await httpClient.post(ENDPOINTS.auth.login, credentials);
     return data; // { user, token }
   },
+  async registerRecruiter(payload) {
+    const { data } = await httpClient.post('/auth/register/recruiter', payload);
+    return data;
+  },
   async logout() {
     await httpClient.post(ENDPOINTS.auth.logout);
   },

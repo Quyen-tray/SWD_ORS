@@ -6,6 +6,7 @@ export const ENDPOINTS = {
     forgotPassword: '/auth/forgot-password',
     resetPassword: '/auth/reset-password',
     changePassword: '/auth/change-password',
+    registerRecruiter: '/auth/register/recruiter',
   },
   candidates: {
     list: '/recruiter/candidates',
