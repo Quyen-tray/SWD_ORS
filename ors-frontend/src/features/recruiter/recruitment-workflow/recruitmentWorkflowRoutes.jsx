@@ -1,6 +1,7 @@
 import { PipelineBoard } from './components/PipelineBoard.jsx';
 
-// UC-04 Update Pipeline Status - Kanban. PipelineBoard tự nạp dữ liệu qua
+// UC-04 Update Pipeline Status + UC-05/06/07 (Phase 5b: Hire/Offer/Reject dùng chung
+// board này ở 2 cột Offered/Hired) - Kanban. PipelineBoard tự nạp dữ liệu qua
 // usePipelineBoard() (React Query), page ở đây chỉ là khung tiêu đề.
 function RecruitmentWorkflowPage() {
   return (

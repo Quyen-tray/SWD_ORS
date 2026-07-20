@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePipelineBoard } from '../hooks/usePipelineBoard.js';
 import { usePipelineStatus } from '../hooks/usePipelineStatus.js';
 import { Modal } from '../../../../shared/components/Modal.jsx';
@@ -24,16 +24,20 @@ const INTERVIEW_ELIGIBLE_STATUSES = [
 // InterviewResultModal.jsx).
 const RESULT_RECORDABLE_STATUSES = ['SCHEDULED', 'RESCHEDULED', 'COMPLETED'];
 
-// <<boundary>> — UC-04 Update Pipeline Status. Bố cục tham khảo
+// <<boundary>> — UC-04 Update Pipeline Status + UC-07 Hire/Offer/Reject (Phase 5b: 2
+// cột cuối "Offered"/"Hired" dùng lại đúng board này - xem 00_KE_HOACH_TONG_QUAN.md mục
+// 2.2, "UC-07 dùng lại đúng khung state/ đã viết ở UC-04"). Bố cục tham khảo
 // frontend_demo/uc04-pipeline-status.html (8 cột Kanban + form "Từ chối ứng viên" bắt
-// buộc chọn lý do). 7 cột đầu là chuỗi trạng thái active nối tiếp nhau trong
-// `state/PipelineStates.java` (SUBMITTED → ... → HIRED, advance() luôn đi đúng 1 bước,
-// không cho nhảy cóc) - vì vậy board KHÔNG cho kéo thả tự do sang cột bất kỳ, mỗi thẻ chỉ
-// có 1 nút "đi tiếp" sang đúng cột kế bên. Cột thứ 8 (Rejected) có thể nhận thẻ từ bất kỳ
-// cột active nào trừ Hired, khớp PipelineStates.RejectedState + ghi chú trong demo
-// ("Trạng thái Rejected có thể đến từ bất kỳ giai đoạn nào"). WITHDRAWN không có cột
-// riêng (không nằm trong 8 cột của demo, Recruiter cũng không phải người đổi trạng thái
-// đó - ứng viên tự rút đơn).
+// buộc chọn lý do) và frontend_demo/uc07-hire-candidate.html (nút "Xác nhận đã tuyển" +
+// lý do từ chối riêng cho giai đoạn Offer). 7 cột đầu là chuỗi trạng thái active nối
+// tiếp nhau trong `state/PipelineStates.java` (SUBMITTED → ... → HIRED, advance() luôn
+// đi đúng 1 bước, không cho nhảy cóc) - vì vậy board KHÔNG cho kéo thả tự do sang cột bất
+// kỳ, mỗi thẻ chỉ có 1 nút "đi tiếp" sang đúng cột kế bên (ở cột Offered, đây chính là
+// nước đi UC-07 "Xác nhận đã tuyển"). Cột thứ 8 (Rejected) có thể nhận thẻ từ bất kỳ cột
+// active nào trừ Hired, khớp PipelineStates.RejectedState + ghi chú trong demo ("Trạng
+// thái Rejected có thể đến từ bất kỳ giai đoạn nào"). WITHDRAWN không có cột riêng (không
+// nằm trong 8 cột của demo, Recruiter cũng không phải người đổi trạng thái đó - ứng viên
+// tự rút đơn).
 const COLUMNS = [
   { status: APPLICATION_STATUS.SUBMITTED, label: 'Submitted' },
   { status: APPLICATION_STATUS.UNDER_REVIEW, label: 'Under Review' },
@@ -52,6 +56,19 @@ const REJECT_REASON_PRESETS = [
   'Không đủ kinh nghiệm',
   'Không phù hợp văn hóa',
   'Ứng viên rút hồ sơ',
+  'Khác',
+];
+
+// UC-07 (Phase 5b): lý do từ chối riêng cho giai đoạn Offered, khớp <select> trong
+// frontend_demo/uc07-hire-candidate.html - khác với REJECT_REASON_PRESETS ở trên vì lúc
+// này ứng viên đã qua hết vòng phỏng vấn, lý do từ chối mang tính chất "quyết định cuối"
+// (ứng viên tự chối offer / hồ sơ không đạt ở bước cuối / vị trí đã có người khác) chứ
+// không còn là lý do sàng lọc đầu vào. Cùng cơ chế reason tự do + "Khác" như trên, chỉ
+// khác nội dung danh sách gợi ý.
+const OFFER_REJECT_REASON_PRESETS = [
+  'Ứng viên từ chối offer',
+  'Không đạt yêu cầu cuối',
+  'Vị trí đã có người khác',
   'Khác',
 ];
 
@@ -162,7 +179,13 @@ export function PipelineBoard() {
                               disabled={isUpdating}
                               onClick={() => handleAdvance(app, nextCol.status)}
                             >
-                              → {nextCol.label}
+                              {/* UC-07: ở cột Offered, "đi tiếp" chính là quyết định
+                                  tuyển - dùng đúng nhãn nút trong
+                                  frontend_demo/uc07-hire-candidate.html thay vì nhãn
+                                  chung "→ <cột kế tiếp>" của UC-04. */}
+                              {col.status === APPLICATION_STATUS.OFFERED
+                                ? 'Xác nhận đã tuyển'
+                                : `→ ${nextCol.label}`}
                             </Button>
                           )}
                           <Button variant="danger" disabled={isUpdating} onClick={() => openReject(app)}>
@@ -194,6 +217,14 @@ export function PipelineBoard() {
 
       <RejectModal
         application={rejectTarget}
+        // UC-07: từ chối ở cột Offered dùng danh sách lý do riêng
+        // (OFFER_REJECT_REASON_PRESETS), các cột active còn lại giữ nguyên danh sách
+        // UC-04 đã có.
+        reasonPresets={
+          rejectTarget?.status === APPLICATION_STATUS.OFFERED
+            ? OFFER_REJECT_REASON_PRESETS
+            : REJECT_REASON_PRESETS
+        }
         isSubmitting={isUpdating}
         onCancel={closeReject}
         onConfirm={confirmReject}
@@ -221,9 +252,27 @@ export function PipelineBoard() {
 // Form "Từ chối ứng viên" - Alternative Flow A1/A2: bắt buộc chọn/nhập lý do trước khi
 // xác nhận. Validate reason rỗng đã có sẵn ở usePipelineStatus, ở đây validate thêm để
 // nút "Xác nhận từ chối" không bấm được khi rõ ràng chưa nhập gì (phản hồi sớm cho UI).
-function RejectModal({ application, isSubmitting, onCancel, onConfirm }) {
-  const [preset, setPreset] = useState(REJECT_REASON_PRESETS[0]);
+function RejectModal({ application, reasonPresets, isSubmitting, onCancel, onConfirm }) {
+  // Fallback an toàn nếu component nào khác gọi RejectModal mà quên truyền reasonPresets
+  // (hiện chỉ PipelineBoard gọi, nhưng giữ default để không vỡ nếu component rỗng render
+  // trước khi application/reasonPresets sẵn sàng).
+  const presets = reasonPresets ?? REJECT_REASON_PRESETS;
+  const [preset, setPreset] = useState(presets[0]);
   const [customReason, setCustomReason] = useState('');
+
+  // Reset form mỗi khi mở modal cho MỘT application khác (kể cả khi presets đổi giữa
+  // giai đoạn UC-04 và UC-07, vd đóng modal Offered rồi mở lại ở Submitted) - modal này
+  // không unmount giữa các lần mở nên state cũ có thể còn sót lại. Sửa luôn 1 bug có từ
+  // trước (Phase 2b): `confirmReject` đóng modal qua `closeReject` sau khi submit thành
+  // công, không đi qua `handleClose`, nên preset/customReason không được reset - trước
+  // đây không lộ ra vì chỉ có 1 danh sách preset dùng chung, giờ có 2 danh sách khác nhau
+  // theo giai đoạn nên cần reset đúng lúc application đổi, không phụ thuộc đường đóng
+  // modal nào được gọi.
+  useEffect(() => {
+    setPreset(presets[0]);
+    setCustomReason('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [application?.applicationId]);
 
   if (!application) return null;
 
@@ -232,8 +281,6 @@ function RejectModal({ application, isSubmitting, onCancel, onConfirm }) {
   const canConfirm = reason.length > 0 && !isSubmitting;
 
   function handleClose() {
-    setPreset(REJECT_REASON_PRESETS[0]);
-    setCustomReason('');
     onCancel();
   }
 
@@ -251,7 +298,7 @@ function RejectModal({ application, isSubmitting, onCancel, onConfirm }) {
           value={preset}
           onChange={(e) => setPreset(e.target.value)}
         >
-          {REJECT_REASON_PRESETS.map((r) => (
+          {presets.map((r) => (
             <option key={r} value={r}>{r}</option>
           ))}
         </select>
