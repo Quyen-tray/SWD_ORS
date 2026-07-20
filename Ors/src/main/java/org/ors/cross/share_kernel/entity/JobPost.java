@@ -39,7 +39,6 @@ public class JobPost {
     private String title;
 
     @Nationalized
-    @Lob
     @Column(name = "description")
     private String description;
 

@@ -11,11 +11,11 @@ import java.util.List;
 // UC-61.
 @RestController
 @RequestMapping("/admin/audit-log-management")
-public class AuditLogController {
+public class AdminAuditLogController {
 
     private final AuditLogService auditLogService;
 
-    public AuditLogController(AuditLogService auditLogService) {
+    public AdminAuditLogController(AuditLogService auditLogService) {
         this.auditLogService = auditLogService;
     }
 
