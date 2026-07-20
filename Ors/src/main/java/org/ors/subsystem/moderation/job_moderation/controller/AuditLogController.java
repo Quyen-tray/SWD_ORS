@@ -14,7 +14,7 @@ import java.util.List;
 
 // UC-50 - đọc, không có ghi. Audit entry là bất biến (immutable), controller này không có
 // endpoint POST/PUT nào.
-@RestController
+@RestController("moderationAuditLogController")
 @RequestMapping("/moderation/audit-logs")
 public class AuditLogController {
 

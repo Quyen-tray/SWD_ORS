@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 // UC-61.
-@RestController
+@RestController("administrationAuditLogController")
 @RequestMapping("/admin/audit-log-management")
 public class AdminAuditLogController {
 
