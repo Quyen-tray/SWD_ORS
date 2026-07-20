@@ -5,9 +5,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.Optional;
 
-// Dung boi: Recruiter (2.1).
+// Dung boi: Recruiter (2.1) + Candidate (2.2).
 // Them cac query method rieng cua phan minh vao day (vd findByCompanyId, existsBy...).
 @Repository
 public interface InterviewRepository extends JpaRepository<Interview, Integer> {
@@ -28,4 +29,8 @@ public interface InterviewRepository extends JpaRepository<Interview, Integer> {
             + "JOIN FETCH jp.company "
             + "WHERE i.id = :interviewId")
     Optional<Interview> findWithApplicationAndCompanyById(Integer interviewId);
+
+    // UC-73 (application_tracking, phía Candidate) - đếm số lịch phỏng vấn sắp tới
+    // (scheduledTime > now) của 1 candidate, dùng cho dashboard stats.
+    long countByApplication_Candidate_IdAndScheduledTimeAfter(Integer candidateId, Instant scheduledTime);
 }

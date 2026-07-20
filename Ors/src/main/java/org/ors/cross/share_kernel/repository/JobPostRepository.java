@@ -14,4 +14,13 @@ public interface JobPostRepository extends JpaRepository<JobPost, Integer> {
 
     // UC-49 - đếm tin đang chờ duyệt cho panel Dashboard (Facade).
     long countByValidationStatus(String validationStatus);
+
+    @org.springframework.data.jpa.repository.Query("SELECT jp FROM JobPost jp WHERE " +
+            "(jp.status = 'ACTIVE' OR jp.status = 'PUBLISHED') AND " +
+            "(:keyword IS NULL OR :keyword = '' OR LOWER(jp.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(jp.description) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
+            "(:categoryName IS NULL OR :categoryName = '' OR LOWER(jp.category.categoryName) LIKE LOWER(CONCAT('%', :categoryName, '%')))")
+    org.springframework.data.domain.Page<JobPost> searchJobs(
+            @org.springframework.data.repository.query.Param("keyword") String keyword,
+            @org.springframework.data.repository.query.Param("categoryName") String categoryName,
+            org.springframework.data.domain.Pageable pageable);
 }

@@ -17,6 +17,7 @@ import java.time.Instant;
 @Table(name = "job_applications")
 public class JobApplication {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 

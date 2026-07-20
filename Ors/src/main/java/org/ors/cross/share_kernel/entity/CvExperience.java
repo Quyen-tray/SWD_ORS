@@ -17,6 +17,7 @@ import java.time.LocalDate;
 @Table(name = "cv_experiences")
 public class CvExperience {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 

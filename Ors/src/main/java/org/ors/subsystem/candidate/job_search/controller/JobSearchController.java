@@ -37,7 +37,22 @@ public class JobSearchController {
         return ResponseEntity.ok(jobSearchService.toggleSavedJob(candidateId, jobPostId));
     }
 
-    // TODO: UC-68 - Thêm endpoints tìm kiếm và xem chi tiết:
-    //   GET /candidate/jobs/search?keyword=&category=&location=&type=&salary=&sort=&page=
-    //   GET /candidate/jobs/{jobPostId}
+    // UC-68: Tìm kiếm việc làm.
+    @GetMapping("/search")
+    public ResponseEntity<List<org.ors.cross.share_kernel.entity.JobPost>> searchJobs(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) Double minSalary,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(defaultValue = "0") int page) {
+        return ResponseEntity.ok(jobSearchService.searchJobs(keyword, category, location, type, minSalary, sortBy, page));
+    }
+
+    // UC-68: Xem chi tiết việc làm.
+    @GetMapping("/{jobPostId}")
+    public ResponseEntity<org.ors.cross.share_kernel.entity.JobPost> getJobDetail(@PathVariable Integer jobPostId) {
+        return ResponseEntity.ok(jobSearchService.getJobDetail(jobPostId));
+    }
 }
