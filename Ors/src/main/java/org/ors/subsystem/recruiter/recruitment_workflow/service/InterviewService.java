@@ -12,6 +12,7 @@ import org.ors.cross.share_kernel.repository.JobApplicationRepository;
 import org.ors.cross.share_kernel.repository.RecruiterProfileRepository;
 import org.ors.cross.share_kernel.repository.UserRepository;
 import org.ors.subsystem.recruiter.recruitment_workflow.dto.InterviewResponse;
+import org.ors.subsystem.recruiter.recruitment_workflow.dto.RecordInterviewOutcomeRequest;
 import org.ors.subsystem.recruiter.recruitment_workflow.dto.RescheduleInterviewRequest;
 import org.ors.subsystem.recruiter.recruitment_workflow.dto.ScheduleInterviewRequest;
 import org.springframework.security.core.Authentication;
@@ -19,18 +20,21 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
-// UC-05 Schedule/Reschedule/Cancel Interview (recruitment_workflow). Nơi duy nhất chứa
-// business rule của phần này - controller không biết luật, repository không biết luật.
+// UC-05 Schedule/Reschedule/Cancel Interview + UC-06 Record Interview Result
+// (recruitment_workflow, Phase 4a). Nơi duy nhất chứa business rule của phần này -
+// controller không biết luật, repository không biết luật.
 //
 // Phạm vi cố ý KHÔNG làm ở đây (xem 00_KE_HOACH_TONG_QUAN.md): đặt/đổi/huỷ lịch phỏng vấn
-// KHÔNG tự động đổi job_applications.status - đó là việc riêng của UC-04
-// (PATCH /applications/{id}/status, ApplicationStatusController), Recruiter tự bấm chuyển
-// trạng thái sang INTERVIEW_SCHEDULED khi cần, giống hệt cách UC-06 (Record Interview
-// Result, xem ghi chú trong useInterviewOutcome.js) cũng không đụng vào status. Giữ 2 bảng
-// (`job_applications.status` và `interviews.status`) độc lập, mỗi bảng có đúng 1 API sở hữu.
+// và ghi kết quả phỏng vấn (UC-06) đều KHÔNG tự động đổi job_applications.status - đó là
+// việc riêng của UC-04 (PATCH /applications/{id}/status, ApplicationStatusController),
+// Recruiter tự bấm chuyển trạng thái khi cần (vd sang INTERVIEWED sau khi có đủ outcome).
+// Giữ 2 bảng (`job_applications.status` và `interviews.status`) độc lập, mỗi bảng có đúng
+// 1 API sở hữu - recordOutcome() chỉ tự đổi `interviews.status` sang COMPLETED (trạng thái
+// của riêng lịch phỏng vấn này), không đụng tới `job_applications.status`.
 @Service
 public class InterviewService implements IInterviewService {
 
@@ -39,6 +43,12 @@ public class InterviewService implements IInterviewService {
     private static final String RECRUITER_EMAIL_FALLBACK = "hong.le@fpt.com.vn";
 
     private static final List<String> CLOSED_INTERVIEW_STATUSES = List.of("CANCELLED", "COMPLETED");
+
+    // UC-06: khớp đúng CK_interviews_outcome trong db.sql (patch Phase 0) - service là
+    // nơi validate chính, CHECK constraint ở DB chỉ là lưới an toàn cuối cùng.
+    private static final List<String> ALLOWED_OUTCOMES = List.of("PASS", "FAIL", "NEED_SECOND_ROUND");
+    private static final BigDecimal RATING_MIN = BigDecimal.ZERO;
+    private static final BigDecimal RATING_MAX = new BigDecimal("5.0");
 
     private final InterviewRepository interviewRepository;
     private final JobApplicationRepository jobApplicationRepository;
@@ -125,7 +135,53 @@ public class InterviewService implements IInterviewService {
         return InterviewResponse.from(interview);
     }
 
-    // Dùng chung cho get/cancel/reschedule: load interview kèm company, 404 nếu không tồn
+    @Override
+    @Transactional
+    public InterviewResponse recordOutcome(Integer interviewId, RecordInterviewOutcomeRequest request) {
+        Interview interview = loadOwnedInterview(interviewId);
+        // Cùng luật với cancel/reschedule: không ghi kết quả lên lịch đã kết thúc rồi
+        // (CANCELLED - không diễn ra; COMPLETED - đã có kết quả trước đó, muốn sửa thì
+        // đây không phải luồng chính của UC-06, chưa có yêu cầu "sửa kết quả đã ghi").
+        requireOpenInterview(interview, "ghi kết quả");
+
+        String outcome = requireValidOutcome(request.outcome());
+        BigDecimal rating = requireValidRating(request.rating());
+
+        interview.setOutcome(outcome);
+        interview.setRating(rating);
+        interview.setComments(request.comments());
+        // Ghi kết quả xong nghĩa là buổi phỏng vấn đã thực sự diễn ra - chuyển COMPLETED,
+        // khớp CLOSED_INTERVIEW_STATUSES nên sau đó không thể cancel/reschedule/ghi đè
+        // kết quả lần 2 lên chính vòng này nữa.
+        interview.setStatus("COMPLETED");
+        interviewRepository.save(interview);
+
+        return InterviewResponse.from(interview);
+    }
+
+    // UC-06: outcome bắt buộc và phải khớp đúng CK_interviews_outcome (db.sql).
+    private String requireValidOutcome(String outcome) {
+        if (outcome == null || !ALLOWED_OUTCOMES.contains(outcome)) {
+            throw new BadRequestException(
+                    "Kết quả phỏng vấn phải là một trong: " + String.join(", ", ALLOWED_OUTCOMES));
+        }
+        return outcome;
+    }
+
+    // UC-06: rating tuỳ chọn (cột interviews.rating cho phép NULL - Recruiter có thể ghi
+    // outcome mà chưa chấm điểm), nhưng nếu có thì phải trong khoảng 0.0-5.0 khớp UI dạng
+    // sao (frontend_demo/uc06-record-interview-result.html hiển thị "x.x / 5").
+    private BigDecimal requireValidRating(BigDecimal rating) {
+        if (rating == null) {
+            return null;
+        }
+        if (rating.compareTo(RATING_MIN) < 0 || rating.compareTo(RATING_MAX) > 0) {
+            throw new BadRequestException("Đánh giá phải trong khoảng 0-5");
+        }
+        return rating;
+    }
+
+    // Dùng chung cho get/cancel/reschedule/recordOutcome: load interview kèm company, 404 nếu không tồn
     // tại hoặc không thuộc công ty của Recruiter đang đăng nhập.
     private Interview loadOwnedInterview(Integer interviewId) {
         Interview interview = interviewRepository.findWithApplicationAndCompanyById(interviewId)
@@ -138,8 +194,8 @@ public class InterviewService implements IInterviewService {
         return interview;
     }
 
-    // UC-05 A1/A2: không cho đổi lịch hoặc huỷ một lịch đã CANCELLED/COMPLETED - 2 trạng
-    // thái đó là kết, không còn thao tác nào hợp lệ tiếp theo.
+    // UC-05 A1/A2 + UC-06: không cho đổi lịch/huỷ/ghi kết quả một lịch đã CANCELLED/
+    // COMPLETED - 2 trạng thái đó là kết, không còn thao tác nào hợp lệ tiếp theo.
     private void requireOpenInterview(Interview interview, String action) {
         if (CLOSED_INTERVIEW_STATUSES.contains(interview.getStatus())) {
             throw new BadRequestException(

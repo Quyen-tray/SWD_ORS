@@ -1,6 +1,7 @@
 package org.ors.subsystem.recruiter.recruitment_workflow.service;
 
 import org.ors.subsystem.recruiter.recruitment_workflow.dto.InterviewResponse;
+import org.ors.subsystem.recruiter.recruitment_workflow.dto.RecordInterviewOutcomeRequest;
 import org.ors.subsystem.recruiter.recruitment_workflow.dto.RescheduleInterviewRequest;
 import org.ors.subsystem.recruiter.recruitment_workflow.dto.ScheduleInterviewRequest;
 
@@ -24,4 +25,10 @@ public interface IInterviewService {
     // UC-05 A1: đổi lịch đã đặt sang thời gian khác, giữ nguyên round. Không cho đổi lịch
     // đã CANCELLED/COMPLETED.
     InterviewResponse rescheduleInterview(Integer interviewId, RescheduleInterviewRequest request);
+
+    // UC-06 luồng chính: ghi kết quả phỏng vấn (outcome/rating/comments) cho 1 vòng phỏng
+    // vấn cụ thể - độc lập với job_applications.status (xem ghi chú ở đầu InterviewService).
+    // Không cho ghi kết quả lên lịch đã CANCELLED/COMPLETED (cùng luật với reschedule/
+    // cancel). Ghi xong, interview chuyển sang COMPLETED.
+    InterviewResponse recordOutcome(Integer interviewId, RecordInterviewOutcomeRequest request);
 }

@@ -1,6 +1,7 @@
 package org.ors.subsystem.recruiter.recruitment_workflow.controller;
 
 import org.ors.subsystem.recruiter.recruitment_workflow.dto.InterviewResponse;
+import org.ors.subsystem.recruiter.recruitment_workflow.dto.RecordInterviewOutcomeRequest;
 import org.ors.subsystem.recruiter.recruitment_workflow.dto.RescheduleInterviewRequest;
 import org.ors.subsystem.recruiter.recruitment_workflow.dto.ScheduleInterviewRequest;
 import org.ors.subsystem.recruiter.recruitment_workflow.service.IInterviewService;
@@ -11,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-// UC-05 Schedule/Reschedule/Cancel Interview (recruitment_workflow). Xem
-// 00_KE_HOACH_TONG_QUAN.md để biết phạm vi hiện tại.
+// UC-05 Schedule/Reschedule/Cancel Interview + UC-06 Record Interview Result
+// (recruitment_workflow, Phase 4a). Xem 00_KE_HOACH_TONG_QUAN.md để biết phạm vi hiện tại.
 //
 // Quy uoc:
 //   - Path o day KHONG co /api/v1: context-path da khai bao trong application.properties.
@@ -44,8 +45,7 @@ public class InterviewController {
     }
 
     // UC-05 A2 - huỷ lịch đã đặt. Không nhận body (khớp
-    // pipelineApi.cancelInterview(interviewId) bên frontend, không gửi gì trong
-    // body).
+    // pipelineApi.cancelInterview(interviewId) bên frontend, không gửi gì trong body).
     @PostMapping("/{id}/cancel")
     public InterviewResponse cancelInterview(@PathVariable Integer id) {
         return interviewService.cancelInterview(id);
@@ -54,7 +54,15 @@ public class InterviewController {
     // UC-05 A1 - đổi lịch đã đặt sang thời gian khác.
     @PostMapping("/{id}/reschedule")
     public InterviewResponse rescheduleInterview(@PathVariable Integer id,
-            @RequestBody RescheduleInterviewRequest request) {
+                                                  @RequestBody RescheduleInterviewRequest request) {
         return interviewService.rescheduleInterview(id, request);
+    }
+
+    // UC-06 luồng chính - ghi kết quả phỏng vấn (outcome/rating/comments). Khớp
+    // ENDPOINTS.interviews.recordOutcome / pipelineApi.recordOutcome bên frontend.
+    @PostMapping("/{id}/evaluation")
+    public InterviewResponse recordOutcome(@PathVariable Integer id,
+                                            @RequestBody RecordInterviewOutcomeRequest request) {
+        return interviewService.recordOutcome(id, request);
     }
 }
