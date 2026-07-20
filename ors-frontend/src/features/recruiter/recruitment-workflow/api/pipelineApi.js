@@ -34,7 +34,11 @@ export const pipelineApi = {
     return data;
   },
   async cancelInterview(interviewId) {
-    await httpClient.post(ENDPOINTS.interviews.cancel(interviewId));
+    // Phase 3b: đổi từ discard response sang trả về data - InterviewController.cancelInterview
+    // trả InterviewResponse (status=CANCELLED), UI cần nó để cập nhật state tại chỗ mà không
+    // phải gọi lại GET /interviews/{id} riêng.
+    const { data } = await httpClient.post(ENDPOINTS.interviews.cancel(interviewId));
+    return data;
   },
   async rescheduleInterview(interviewId, newTime) {
     const { data } = await httpClient.post(ENDPOINTS.interviews.reschedule(interviewId), {

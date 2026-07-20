@@ -4,6 +4,18 @@ import { usePipelineStatus } from '../hooks/usePipelineStatus.js';
 import { Modal } from '../../../../shared/components/Modal.jsx';
 import { Button } from '../../../../shared/components/Button.jsx';
 import { APPLICATION_STATUS } from '../../../../shared/types/index.js';
+import { InterviewModal } from './InterviewModal.jsx';
+
+// UC-05: giai đoạn nào trên board thì cho phép bấm "Đặt lịch phỏng vấn" - tham khảo mô tả
+// trong frontend_demo/uc05-schedule-interview.html ("ứng viên đang ở giai đoạn Screening
+// hoặc Interview"), ánh xạ sang 3 cột gần khớp nhất trong 8 cột hiện có: đã qua vòng lọc
+// hồ sơ (Shortlisted) tới lúc đã phỏng vấn xong nhưng chưa quyết định (Interviewed) - cho
+// phép cả đặt thêm vòng phỏng vấn tiếp theo trong lúc còn ở Interviewed.
+const INTERVIEW_ELIGIBLE_STATUSES = [
+  APPLICATION_STATUS.SHORTLISTED,
+  APPLICATION_STATUS.INTERVIEW_SCHEDULED,
+  APPLICATION_STATUS.INTERVIEWED,
+];
 
 // <<boundary>> — UC-04 Update Pipeline Status. Bố cục tham khảo
 // frontend_demo/uc04-pipeline-status.html (8 cột Kanban + form "Từ chối ứng viên" bắt
@@ -47,6 +59,14 @@ export function PipelineBoard() {
   // Ứng viên đang mở form từ chối (null = modal đóng). Giữ state ở board thay vì mỗi
   // pcard tự có modal riêng, vì tại 1 thời điểm chỉ có đúng 1 form từ chối đang mở.
   const [rejectTarget, setRejectTarget] = useState(null);
+  // UC-05: application đang mở modal lịch phỏng vấn (null = modal đóng), cùng khuôn với
+  // rejectTarget ở trên. `interviewsByApplication` (applicationId -> InterviewResponse
+  // | undefined) là bộ nhớ tạm phía client cho interview mới nhất của từng application -
+  // xem ghi chú GIỚI HẠN ĐÃ BIẾT trong InterviewModal.jsx: backend chưa có endpoint tra
+  // interview hiện tại theo applicationId nên không nạp được từ server, chỉ cập nhật được
+  // sau khi tự đặt/đổi/hủy lịch trong phiên làm việc hiện tại (mất khi tải lại trang).
+  const [interviewTarget, setInterviewTarget] = useState(null);
+  const [interviewsByApplication, setInterviewsByApplication] = useState({});
 
   function handleAdvance(application, nextStatus) {
     updateStatus({ applicationId: application.applicationId, status: nextStatus });
@@ -58,6 +78,18 @@ export function PipelineBoard() {
 
   function closeReject() {
     setRejectTarget(null);
+  }
+
+  function openInterview(application) {
+    setInterviewTarget(application);
+  }
+
+  function closeInterview() {
+    setInterviewTarget(null);
+  }
+
+  function handleInterviewChange(applicationId, interview) {
+    setInterviewsByApplication((prev) => ({ ...prev, [applicationId]: interview }));
   }
 
   function confirmReject(reason) {
@@ -113,6 +145,13 @@ export function PipelineBoard() {
                           <Button variant="danger" disabled={isUpdating} onClick={() => openReject(app)}>
                             Từ chối
                           </Button>
+                          {INTERVIEW_ELIGIBLE_STATUSES.includes(col.status) && (
+                            <Button variant="ghost" onClick={() => openInterview(app)}>
+                              {interviewsByApplication[app.applicationId]
+                                ? 'Xem lịch PV'
+                                : 'Đặt lịch PV'}
+                            </Button>
+                          )}
                         </div>
                       )}
                   </div>
@@ -128,6 +167,14 @@ export function PipelineBoard() {
         isSubmitting={isUpdating}
         onCancel={closeReject}
         onConfirm={confirmReject}
+      />
+
+      <InterviewModal
+        open={!!interviewTarget}
+        application={interviewTarget}
+        interview={interviewTarget ? interviewsByApplication[interviewTarget.applicationId] ?? null : null}
+        onClose={closeInterview}
+        onChange={(interview) => handleInterviewChange(interviewTarget.applicationId, interview)}
       />
     </div>
   );
