@@ -1,6 +1,7 @@
 package org.ors.subsystem.administration.user_management.controller;
 
 import org.ors.subsystem.administration.user_management.dto.StatusChangeRequest;
+import org.ors.subsystem.administration.user_management.dto.UserDetailResponse;
 import org.ors.subsystem.administration.user_management.dto.UserResponse;
 import org.ors.subsystem.administration.user_management.service.IUserService;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,12 @@ public class UserController {
                                        @RequestParam(required = false) String role,
                                        @RequestParam(required = false) String status) {
         return userService.getUsers(keyword, role, status);
+    }
+
+    // UC-62 - hồ sơ chi tiết + lịch sử thao tác của một người dùng.
+    @GetMapping("/{id}")
+    public UserDetailResponse getUserDetail(@PathVariable Integer id) {
+        return userService.getUserDetail(id);
     }
 
     // UC-54

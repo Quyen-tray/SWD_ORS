@@ -6,6 +6,7 @@ import org.ors.cross.share_kernel.exception.BadRequestException;
 import org.ors.cross.share_kernel.exception.ResourceNotFoundException;
 import org.ors.cross.share_kernel.repository.UserRepository;
 import org.ors.subsystem.administration.audit.AuditLogService;
+import org.ors.subsystem.administration.user_management.dto.UserDetailResponse;
 import org.ors.subsystem.administration.user_management.dto.UserResponse;
 import org.ors.subsystem.administration.user_management.lookup.UserCriteria;
 import org.ors.subsystem.administration.user_management.lookup.UserLookupSelector;
@@ -65,6 +66,13 @@ public class UserService implements IUserService {
     public void banUser(Integer userId, String reason) {
         requireReason(reason);
         changeStatus(userId, "BAN_USER", reason, AccountState::ban);
+    }
+
+    @Override
+    public UserDetailResponse getUserDetail(Integer userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng: " + userId));
+        return UserDetailResponse.from(user, auditLogService.getLogsForUser(userId));
     }
 
     // Ba thao tác đổi trạng thái chỉ khác nhau ở nước đi yêu cầu state thực hiện, nên phần

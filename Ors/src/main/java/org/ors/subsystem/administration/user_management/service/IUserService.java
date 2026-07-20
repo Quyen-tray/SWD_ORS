@@ -1,5 +1,6 @@
 package org.ors.subsystem.administration.user_management.service;
 
+import org.ors.subsystem.administration.user_management.dto.UserDetailResponse;
 import org.ors.subsystem.administration.user_management.dto.UserResponse;
 
 import java.util.List;
@@ -19,4 +20,7 @@ public interface IUserService {
 
     // UC-56
     void banUser(Integer userId, String reason);
+
+    // UC-62: hồ sơ chi tiết + lịch sử thao tác của một người dùng.
+    UserDetailResponse getUserDetail(Integer userId);
 }
