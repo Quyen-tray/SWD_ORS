@@ -1,4 +1,4 @@
-package org.ors.subsystem.recruiter.candidate_management.service;
+package org.ors.subsystem.recruiter.recruitment_workflow.service;
 
 import org.ors.cross.Iam.security.user.CustomUserDetails;
 import org.ors.cross.share_kernel.entity.ApplicationStatusHistory;
@@ -11,10 +11,10 @@ import org.ors.cross.share_kernel.repository.ApplicationStatusHistoryRepository;
 import org.ors.cross.share_kernel.repository.JobApplicationRepository;
 import org.ors.cross.share_kernel.repository.RecruiterProfileRepository;
 import org.ors.cross.share_kernel.repository.UserRepository;
-import org.ors.subsystem.recruiter.candidate_management.dto.ApplicationStatusHistoryResponse;
-import org.ors.subsystem.recruiter.candidate_management.dto.ApplicationStatusResponse;
-import org.ors.subsystem.recruiter.candidate_management.state.PipelineState;
-import org.ors.subsystem.recruiter.candidate_management.state.PipelineStates;
+import org.ors.subsystem.recruiter.recruitment_workflow.dto.ApplicationStatusHistoryResponse;
+import org.ors.subsystem.recruiter.recruitment_workflow.dto.ApplicationStatusResponse;
+import org.ors.subsystem.recruiter.recruitment_workflow.state.PipelineState;
+import org.ors.subsystem.recruiter.recruitment_workflow.state.PipelineStates;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;

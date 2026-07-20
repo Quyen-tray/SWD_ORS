@@ -1,4 +1,4 @@
-package org.ors.subsystem.recruiter.candidate_management.dto;
+package org.ors.subsystem.recruiter.recruitment_workflow.dto;
 
 import org.ors.cross.share_kernel.entity.ApplicationStatusHistory;
 

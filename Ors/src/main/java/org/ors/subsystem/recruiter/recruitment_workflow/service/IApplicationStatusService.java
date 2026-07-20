@@ -1,7 +1,7 @@
-package org.ors.subsystem.recruiter.candidate_management.service;
+package org.ors.subsystem.recruiter.recruitment_workflow.service;
 
-import org.ors.subsystem.recruiter.candidate_management.dto.ApplicationStatusHistoryResponse;
-import org.ors.subsystem.recruiter.candidate_management.dto.ApplicationStatusResponse;
+import org.ors.subsystem.recruiter.recruitment_workflow.dto.ApplicationStatusHistoryResponse;
+import org.ors.subsystem.recruiter.recruitment_workflow.dto.ApplicationStatusResponse;
 
 import java.util.List;
 

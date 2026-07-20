@@ -1,4 +1,4 @@
-package org.ors.subsystem.recruiter.candidate_management.dto;
+package org.ors.subsystem.recruiter.recruitment_workflow.dto;
 
 // Body của PATCH /applications/{id}/status (UC-04, tái dùng ở UC-07). Khớp đúng
 // pipelineApi.updateStatus() bên frontend (recruitment-workflow/api/pipelineApi.js):

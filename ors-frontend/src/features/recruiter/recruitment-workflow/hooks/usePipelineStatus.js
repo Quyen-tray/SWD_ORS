@@ -14,7 +14,11 @@ export function usePipelineStatus() {
       return pipelineApi.updateStatus(applicationId, { status, reason });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['candidates'] });
+      // Khớp đúng queryKey thật đang dùng (useCandidateList: ['recruiter','candidates',...],
+      // usePipelineBoard: ['recruiter','pipeline','board']) - bản cũ invalidate ['candidates']
+      // không khớp key nào nên UC-01 lẫn Kanban đều không tự refetch sau khi đổi trạng thái.
+      queryClient.invalidateQueries({ queryKey: ['recruiter', 'candidates'] });
+      queryClient.invalidateQueries({ queryKey: ['recruiter', 'pipeline'] });
     },
   });
 

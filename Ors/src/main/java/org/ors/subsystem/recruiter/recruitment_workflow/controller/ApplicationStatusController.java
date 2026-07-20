@@ -1,9 +1,9 @@
-package org.ors.subsystem.recruiter.candidate_management.controller;
+package org.ors.subsystem.recruiter.recruitment_workflow.controller;
 
-import org.ors.subsystem.recruiter.candidate_management.dto.ApplicationStatusHistoryResponse;
-import org.ors.subsystem.recruiter.candidate_management.dto.ApplicationStatusResponse;
-import org.ors.subsystem.recruiter.candidate_management.dto.UpdateStatusRequest;
-import org.ors.subsystem.recruiter.candidate_management.service.IApplicationStatusService;
+import org.ors.subsystem.recruiter.recruitment_workflow.dto.ApplicationStatusHistoryResponse;
+import org.ors.subsystem.recruiter.recruitment_workflow.dto.ApplicationStatusResponse;
+import org.ors.subsystem.recruiter.recruitment_workflow.dto.UpdateStatusRequest;
+import org.ors.subsystem.recruiter.recruitment_workflow.service.IApplicationStatusService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-// UC-04 Update Pipeline Status (candidate_management), tái dùng ở UC-07. Xem
+// UC-04 Update Pipeline Status (recruitment_workflow), tái dùng ở UC-07. Xem
 // 00_KE_HOACH_TONG_QUAN.md để biết phạm vi hiện tại.
 //
 // Quy uoc:
