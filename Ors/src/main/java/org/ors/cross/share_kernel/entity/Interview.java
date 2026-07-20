@@ -5,10 +5,12 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Nationalized;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Getter
@@ -17,6 +19,7 @@ import java.time.Instant;
 @Table(name = "interviews")
 public class Interview {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 
@@ -44,5 +47,28 @@ public class Interview {
     @Nationalized
     @Column(name = "meeting_link", length = 500)
     private String meetingLink;
+
+    @Size(max = 30)
+    @NotNull
+    @ColumnDefault("'SCHEDULED'")
+    @Column(name = "status", nullable = false, length = 30)
+    private String status;
+
+    @NotNull
+    @ColumnDefault("1")
+    @Column(name = "round", nullable = false)
+    private Integer round;
+
+    @Size(max = 30)
+    @Column(name = "outcome", length = 30)
+    private String outcome;
+
+    @Column(name = "rating", precision = 3, scale = 1)
+    private BigDecimal rating;
+
+    @Nationalized
+    @Lob
+    @Column(name = "comments")
+    private String comments;
 
 }

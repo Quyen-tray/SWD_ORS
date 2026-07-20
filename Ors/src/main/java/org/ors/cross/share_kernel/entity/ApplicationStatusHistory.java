@@ -38,4 +38,13 @@ public class ApplicationStatusHistory {
     @Column(name = "changed_at")
     private Instant changedAt;
 
+    @Size(max = 500)
+    @Nationalized
+    @Column(name = "reason", length = 500)
+    private String reason;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "changed_by")
+    private User changedBy;
+
 }

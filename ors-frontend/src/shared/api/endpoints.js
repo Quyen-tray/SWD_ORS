@@ -25,8 +25,6 @@ export const ENDPOINTS = {
   },
   candidates: {
     list: '/recruiter/candidates',
-    detail: (id) => `/recruiter/candidates/${id}`,
-    downloadCv: (cvId) => `/recruiter/cvs/${cvId}/download`,
   },
   applications: {
     updateStatus: (id) => `/applications/${id}/status`, // body: { status, reason? }
