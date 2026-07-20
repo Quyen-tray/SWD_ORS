@@ -5,6 +5,7 @@ import { Modal } from '../../../../shared/components/Modal.jsx';
 import { Button } from '../../../../shared/components/Button.jsx';
 import { APPLICATION_STATUS } from '../../../../shared/types/index.js';
 import { InterviewModal } from './InterviewModal.jsx';
+import { InterviewResultModal } from './InterviewResultModal.jsx';
 
 // UC-05: giai đoạn nào trên board thì cho phép bấm "Đặt lịch phỏng vấn" - tham khảo mô tả
 // trong frontend_demo/uc05-schedule-interview.html ("ứng viên đang ở giai đoạn Screening
@@ -16,6 +17,12 @@ const INTERVIEW_ELIGIBLE_STATUSES = [
   APPLICATION_STATUS.INTERVIEW_SCHEDULED,
   APPLICATION_STATUS.INTERVIEWED,
 ];
+
+// UC-06 (Phase 4b): chỉ cho mở modal ghi/xem kết quả khi đã có 1 interview và nó chưa bị
+// hủy - khớp requireOpenInterview phía backend (không cho ghi kết quả lên lịch CANCELLED).
+// COMPLETED vẫn cho mở để xem lại (modal tự chuyển sang chế độ chỉ đọc, xem
+// InterviewResultModal.jsx).
+const RESULT_RECORDABLE_STATUSES = ['SCHEDULED', 'RESCHEDULED', 'COMPLETED'];
 
 // <<boundary>> — UC-04 Update Pipeline Status. Bố cục tham khảo
 // frontend_demo/uc04-pipeline-status.html (8 cột Kanban + form "Từ chối ứng viên" bắt
@@ -67,6 +74,10 @@ export function PipelineBoard() {
   // sau khi tự đặt/đổi/hủy lịch trong phiên làm việc hiện tại (mất khi tải lại trang).
   const [interviewTarget, setInterviewTarget] = useState(null);
   const [interviewsByApplication, setInterviewsByApplication] = useState({});
+  // UC-06: application đang mở modal ghi/xem kết quả phỏng vấn (null = modal đóng), cùng
+  // khuôn với interviewTarget ở trên - dùng chung interviewsByApplication để lấy đúng
+  // interview mới nhất, không cần state riêng.
+  const [resultTarget, setResultTarget] = useState(null);
 
   function handleAdvance(application, nextStatus) {
     updateStatus({ applicationId: application.applicationId, status: nextStatus });
@@ -89,6 +100,18 @@ export function PipelineBoard() {
   }
 
   function handleInterviewChange(applicationId, interview) {
+    setInterviewsByApplication((prev) => ({ ...prev, [applicationId]: interview }));
+  }
+
+  function openResult(application) {
+    setResultTarget(application);
+  }
+
+  function closeResult() {
+    setResultTarget(null);
+  }
+
+  function handleResultChange(applicationId, interview) {
     setInterviewsByApplication((prev) => ({ ...prev, [applicationId]: interview }));
   }
 
@@ -152,6 +175,13 @@ export function PipelineBoard() {
                                 : 'Đặt lịch PV'}
                             </Button>
                           )}
+                          {RESULT_RECORDABLE_STATUSES.includes(interviewsByApplication[app.applicationId]?.status) && (
+                            <Button variant="ghost" onClick={() => openResult(app)}>
+                              {interviewsByApplication[app.applicationId].status === 'COMPLETED'
+                                ? 'Xem kết quả'
+                                : 'Ghi kết quả'}
+                            </Button>
+                          )}
                         </div>
                       )}
                   </div>
@@ -175,6 +205,14 @@ export function PipelineBoard() {
         interview={interviewTarget ? interviewsByApplication[interviewTarget.applicationId] ?? null : null}
         onClose={closeInterview}
         onChange={(interview) => handleInterviewChange(interviewTarget.applicationId, interview)}
+      />
+
+      <InterviewResultModal
+        open={!!resultTarget}
+        application={resultTarget}
+        interview={resultTarget ? interviewsByApplication[resultTarget.applicationId] ?? null : null}
+        onClose={closeResult}
+        onChange={(interview) => handleResultChange(resultTarget.applicationId, interview)}
       />
     </div>
   );

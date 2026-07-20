@@ -1,30 +1,91 @@
+// <<DataAbstraction>> dùng chung. Dự án dùng JS thuần (không TypeScript), nên các
+// "type" này được khai báo bằng JSDoc để vẫn có gợi ý kiểu trong IDE mà không
+// cần build step riêng. Đây là nơi liệt kê enum khớp đúng với ors_final.sql —
+// đổi ở đây khi DB đổi, không hardcode chuỗi trạng thái rải rác trong feature.
+
 /**
- * UC-04 Kanban board: tái dùng đúng CandidateSummaryResponse của UC-01 (xem
- * `candidate-management/types/index.js`) - `pipelineApi.listBoard()` gọi thẳng cùng
- * endpoint GET /recruiter/candidates, không có DTO board riêng ở backend.
- * @typedef {Object} Application
- * @property {number} applicationId
- * @property {string} fullName
- * @property {string} jobTitle
- * @property {number=} rating
- * @property {import('../../../../shared/types/index.js').ApplicationStatus} status
- * @property {string} appliedAt - ISO datetime.
+ * Khớp job_applications.status trong ors_final.sql (7 giá trị active + WITHDRAWN).
+ * @typedef {'SUBMITTED'|'UNDER_REVIEW'|'SHORTLISTED'|'INTERVIEW_SCHEDULED'|
+ *   'INTERVIEWED'|'OFFERED'|'HIRED'|'REJECTED'|'WITHDRAWN'} ApplicationStatus
  */
 
 /**
- * Khớp InterviewResponse bên backend (UC-05, xem InterviewResponse.java) - dùng chung cho
- * cả 4 endpoint schedule/detail/cancel/reschedule. outcome/rating/comments luôn null cho
- * tới khi UC-06 (Phase 4a) ghi kết quả, nhưng vẫn khai báo đủ ở đây để InterviewModal
- * (Phase 3b) và màn UC-06 (Phase 4b) dùng chung 1 typedef, không phải khai lại.
- * @typedef {Object} Interview
- * @property {number} id
- * @property {number} applicationId
- * @property {string} scheduledTime - ISO-8601 có offset/"Z".
- * @property {string=} location
- * @property {string=} meetingLink
- * @property {import('../../../../shared/types/index.js').InterviewStatus} status
- * @property {number} round
- * @property {import('../../../../shared/types/index.js').InterviewOutcome=} outcome
- * @property {number=} rating
- * @property {string=} comments
+ * Khớp interviews.outcome / CK_interviews_outcome trong db.sql (patch Phase 0). Sửa ở
+ * Phase 4b: bản cũ ghi 'SECOND_ROUND' - sai với CHECK constraint thật (backend luôn 400).
+ * @typedef {'PASS'|'FAIL'|'NEED_SECOND_ROUND'} InterviewOutcome
  */
+
+/**
+ * Khớp interviews.status (CHANGE-3 trong ors_final.sql).
+ * @typedef {'SCHEDULED'|'RESCHEDULED'|'CANCELLED'|'COMPLETED'} InterviewStatus
+ */
+
+/**
+ * @typedef {Object} User
+ * @property {number} id
+ * @property {string} email
+ * @property {'CANDIDATE'|'RECRUITER'|'MODERATOR'|'ADMIN'} role
+ */
+
+/**
+ * @typedef {Object} ApiResponse
+ * @property {boolean} success
+ * @property {*} data
+ * @property {string=} message
+ */
+
+/**
+ * Khớp job_reports.status ở backend (Moderation, UC-45..48). Cột DB là NVARCHAR tự do,
+ * không CHECK - enum này chỉ để tránh hardcode chuỗi rải rác ở feature moderator.
+ * @typedef {'PENDING'|'UNDER_INVESTIGATION'|'RESOLVED'|'CLOSED'} ReportStatus
+ */
+
+/**
+ * UC-47 - một report có thể chọn nhiều hành động xử lý cùng lúc (AF-01).
+ * @typedef {'REMOVE_POSTING'|'SUSPEND_COMPANY'|'ISSUE_WARNING'} EnforcementType
+ */
+
+/**
+ * UC-48 - lý do đóng report, bắt buộc chọn.
+ * @typedef {'NO_VIOLATION_FOUND'|'DUPLICATE_REPORT'|'REPORTER_ERROR'|
+ *   'ENTITY_ALREADY_REMOVED'|'OTHER'} ClosureReason
+ */
+
+export const APPLICATION_STATUS = /** @type {const} */ ({
+  SUBMITTED: 'SUBMITTED',
+  UNDER_REVIEW: 'UNDER_REVIEW',
+  SHORTLISTED: 'SHORTLISTED',
+  INTERVIEW_SCHEDULED: 'INTERVIEW_SCHEDULED',
+  INTERVIEWED: 'INTERVIEWED',
+  OFFERED: 'OFFERED',
+  HIRED: 'HIRED',
+  REJECTED: 'REJECTED',
+  WITHDRAWN: 'WITHDRAWN',
+});
+
+export const INTERVIEW_OUTCOME = /** @type {const} */ ({
+  PASS: 'PASS',
+  FAIL: 'FAIL',
+  SECOND_ROUND: 'SECOND_ROUND',
+});
+
+export const REPORT_STATUS = /** @type {const} */ ({
+  PENDING: 'PENDING',
+  UNDER_INVESTIGATION: 'UNDER_INVESTIGATION',
+  RESOLVED: 'RESOLVED',
+  CLOSED: 'CLOSED',
+});
+
+export const ENFORCEMENT_TYPE = /** @type {const} */ ({
+  REMOVE_POSTING: 'REMOVE_POSTING',
+  SUSPEND_COMPANY: 'SUSPEND_COMPANY',
+  ISSUE_WARNING: 'ISSUE_WARNING',
+});
+
+export const CLOSURE_REASON = /** @type {const} */ ({
+  NO_VIOLATION_FOUND: 'NO_VIOLATION_FOUND',
+  DUPLICATE_REPORT: 'DUPLICATE_REPORT',
+  REPORTER_ERROR: 'REPORTER_ERROR',
+  ENTITY_ALREADY_REMOVED: 'ENTITY_ALREADY_REMOVED',
+  OTHER: 'OTHER',
+});
