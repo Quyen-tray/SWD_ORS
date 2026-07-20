@@ -8,8 +8,10 @@ export function AdminLayout() {
       <aside style={styles.sidebar}>
         <div style={styles.brand}>ORS — Admin</div>
         <nav style={styles.nav}>
+          <NavLink to="/admin/dashboard" style={navLinkStyle}>Tổng quan</NavLink>
           <NavLink to="/admin/users" style={navLinkStyle}>Người dùng</NavLink>
           <NavLink to="/admin/job-categories" style={navLinkStyle}>Danh mục ngành nghề</NavLink>
+          <NavLink to="/admin/audit-logs" style={navLinkStyle}>Nhật ký kiểm toán</NavLink>
         </nav>
       </aside>
       <main style={{ flex: 1, padding: 24 }}>

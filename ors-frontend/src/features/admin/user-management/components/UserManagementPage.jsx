@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useUserManagement } from '../hooks/useUserManagement.js';
 import { useAuthStore } from '../../../../app/store.js';
 import { Table } from '../../../../shared/components/Table.jsx';
@@ -57,7 +58,7 @@ export function UserManagementPage() {
       label: 'Email',
       render: (u) => (
         <span>
-          {u.email}
+          <Link to={`/admin/users/${u.id}`} style={styles.emailLink}>{u.email}</Link>
           {u.email === currentEmail && <span style={styles.you}>Bạn</span>}
         </span>
       ),
@@ -191,6 +192,7 @@ function statusPill(status) {
 
 const styles = {
   card: { background: '#fff', borderRadius: 10, padding: 20, border: '1px solid #e5e7eb' },
+  emailLink: { color: '#111827', textDecoration: 'none' },
   toolbar: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 },
   input: { padding: '8px 12px', borderRadius: 6, border: '1px solid #d1d5db', minWidth: 260 },
   select: { padding: '8px 12px', borderRadius: 6, border: '1px solid #d1d5db' },

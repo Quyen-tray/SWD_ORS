@@ -7,10 +7,11 @@ export const ENDPOINTS = {
     resetPassword: '/auth/reset-password',
     changePassword: '/auth/change-password',
   },
-  // Admin (FE-07) — UC-53..60.
+  // Admin (FE-07) — UC-53..62.
   admin: {
     users: {
       list: '/admin/user-management',
+      detail: (id) => `/admin/user-management/${id}`, // UC-62
       activate: (id) => `/admin/user-management/${id}/activate`,
       deactivate: (id) => `/admin/user-management/${id}/deactivate`, // body: { reason }
       ban: (id) => `/admin/user-management/${id}/ban`, // body: { reason }
@@ -20,6 +21,9 @@ export const ENDPOINTS = {
       create: '/admin/job-category-management', // body: { categoryName }
       update: (id) => `/admin/job-category-management/${id}`, // body: { categoryName }
       remove: (id) => `/admin/job-category-management/${id}`,
+    },
+    auditLogs: {
+      list: '/admin/audit-log-management', // UC-61
     },
   },
   candidates: {
