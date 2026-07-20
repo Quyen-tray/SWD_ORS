@@ -10,8 +10,9 @@
  */
 
 /**
- * Khớp candidate_evaluations.outcome (CHANGE-2 trong ors_final.sql).
- * @typedef {'PASS'|'FAIL'|'SECOND_ROUND'} InterviewOutcome
+ * Khớp interviews.outcome / CK_interviews_outcome trong db.sql (patch Phase 0). Sửa ở
+ * Phase 4b: bản cũ ghi 'SECOND_ROUND' - sai với CHECK constraint thật (backend luôn 400).
+ * @typedef {'PASS'|'FAIL'|'NEED_SECOND_ROUND'} InterviewOutcome
  */
 
 /**
@@ -65,7 +66,7 @@ export const APPLICATION_STATUS = /** @type {const} */ ({
 export const INTERVIEW_OUTCOME = /** @type {const} */ ({
   PASS: 'PASS',
   FAIL: 'FAIL',
-  SECOND_ROUND: 'SECOND_ROUND',
+  NEED_SECOND_ROUND: 'NEED_SECOND_ROUND',
 });
 
 export const REPORT_STATUS = /** @type {const} */ ({

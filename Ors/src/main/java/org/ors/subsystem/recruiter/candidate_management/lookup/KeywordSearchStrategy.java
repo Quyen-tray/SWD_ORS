@@ -9,8 +9,14 @@ import java.util.List;
 
 // Nhánh 1 của UC-01: Recruiter gõ từ khoá vào ô tìm kiếm (tên hoặc email ứng viên).
 // Từ khoá được ưu tiên hơn bộ lọc, nên @Order thấp nhất (được hỏi trước).
+//
+// Đặt tên bean riêng ("candidateKeywordSearchStrategy") thay vì để @Component tự suy ra
+// tên mặc định từ class name - class administration.user_management.lookup cũng có 1
+// class cùng tên "KeywordSearchStrategy" (khác package), nếu để mặc định thì cả 2 cùng
+// ra tên bean "keywordSearchStrategy" -> Spring quét component báo
+// ConflictingBeanDefinitionException lúc khởi động (đã gặp thật, xem log lỗi kèm theo).
 @Order(1)
-@Component
+@Component("candidateKeywordSearchStrategy")
 public class KeywordSearchStrategy implements CandidateLookupStrategy {
 
     private final JobApplicationRepository jobApplicationRepository;

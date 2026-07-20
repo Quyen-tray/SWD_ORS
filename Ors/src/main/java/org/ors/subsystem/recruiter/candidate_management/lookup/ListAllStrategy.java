@@ -11,8 +11,13 @@ import java.util.List;
 // Đây là chiến lược mặc định: nhận mọi tiêu chí, nên @Order cao nhất để được hỏi sau
 // cùng. Nhờ có nó mà CandidateLookupSelector luôn tìm được một chiến lược, không bao
 // giờ rơi vào trường hợp "không ai nhận việc".
+//
+// Đặt tên bean riêng ("candidateListAllStrategy") - cùng lý do với KeywordSearchStrategy
+// trong package này: administration.user_management.lookup cũng có 1 class tên
+// "ListAllStrategy", để @Component tự suy tên mặc định sẽ trùng bean, Spring báo
+// ConflictingBeanDefinitionException lúc khởi động.
 @Order(Integer.MAX_VALUE)
-@Component
+@Component("candidateListAllStrategy")
 public class ListAllStrategy implements CandidateLookupStrategy {
 
     private final JobApplicationRepository jobApplicationRepository;
